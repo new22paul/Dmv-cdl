@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тренажёр DMV для CDL</title>
+<meta name="description" content="Диалог с сотрудником DMV Флориды: вопросы на английском с озвучкой, ответы голосом или текстом.">
+<meta name="theme-color" content="#0e393e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Overpass:wght@600;700;800&display=swap">
+<style>
+/* Layout: one narrow phone column. A queue-display band ("Now serving A-07") sits over a service-window card:
+   clerk's line on top, your answer below with a big microphone. Tabs: practice, phrase bank, personal data. */
+:root{
+  --bg:#ecf1f0; --surface:#ffffff; --surface-2:#f4f8f7; --ink:#10282b; --muted:#56696c; --line:#d0dcdb;
+  --teal:#0c636d; --teal-ink:#ffffff; --band:#0e393e; --band-ink:#e4f2ef; --sun:#e0951f;
+  --good:#24724a; --good-bg:#e0f1e7; --warn:#8c5a0e; --warn-bg:#fbeed6; --bad:#a23d2d; --bad-bg:#f8e2dd;
+  --rec:#c2412b; --chart-bg:#fbfbf8; --chart-ink:#111111;
+  --f-sign:"Overpass","Arial Narrow",Arial,sans-serif;
+  --f-body:"Golos Text","Segoe UI",Roboto,Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0b1516; --surface:#122224; --surface-2:#17292b; --ink:#e2edeb; --muted:#93a7a8; --line:#24393b;
+    --teal:#56b7c1; --teal-ink:#05272b; --band:#081f22; --band-ink:#d9eeea; --sun:#f2b04a;
+    --good:#6ac58d; --good-bg:#153127; --warn:#e8b158; --warn-bg:#33291a; --bad:#ee8473; --bad-bg:#3a1f1b;
+    --rec:#ff7a62; --chart-bg:#e9ecea; --chart-ink:#111111;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:720px;margin:0 auto;padding-top:calc(env(safe-area-inset-top, 0px) + 18px);padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 48px);padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:16px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+header > div{min-width:0}
+.eyebrow{font-family:var(--f-sign);font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin:0}
+h1{font-weight:700;font-size:clamp(1.45rem,5.4vw,2rem);line-height:1.15;margin:4px 0 0;text-wrap:balance}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;font:600 .95rem var(--f-body);color:var(--muted);cursor:pointer;margin-bottom:-1px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--sun)}
+.panel{display:flex;flex-direction:column;gap:14px}
+.scenes{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:calc(-1 * max(16px, env(safe-area-inset-left, 0px)));padding-inline:max(16px, env(safe-area-inset-left, 0px));padding-block:2px}
+.scenes::-webkit-scrollbar{display:none}
+@media (min-width:700px){.scenes{flex-wrap:wrap;overflow:visible;margin-inline:0;padding-inline:0}}
+.chip{flex:none;appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 12px;font:500 .88rem var(--f-body);cursor:pointer;display:inline-flex;gap:8px;align-items:center;white-space:nowrap}
+.chip .n{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.chip[aria-pressed="true"] .n{color:inherit;opacity:.8}
+.opts{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{appearance:none;border:0;background:none;padding:8px 12px;font:600 .85rem var(--f-body);color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 -2px 0 var(--sun)}
+.toggles{display:flex;flex-wrap:wrap;gap:4px 18px}
+.switch{appearance:none;display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:6px 0;font:600 .88rem var(--f-body);color:var(--ink);cursor:pointer;text-align:left}
+.switch .track{flex:none;width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;transition:background .15s}
+.switch .track::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);transition:transform .15s}
+.switch[aria-pressed="true"] .track{background:var(--teal)}
+.switch[aria-pressed="true"] .track::after{transform:translateX(16px)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.band{background:var(--band);color:var(--band-ink);display:flex;justify-content:space-between;align-items:center;gap:8px 16px;padding:12px 16px;flex-wrap:wrap}
+.serving{display:flex;align-items:baseline;gap:10px}
+.serving small{font:700 .66rem var(--f-sign);letter-spacing:.16em;text-transform:uppercase;opacity:.72}
+.ticket{font:700 1.5rem var(--f-mono);color:var(--sun);letter-spacing:.05em;font-variant-numeric:tabular-nums}
+.where{font-size:.84rem;text-align:right;line-height:1.35}
+.where b{display:block;font-weight:600}
+.where span{opacity:.75;font-variant-numeric:tabular-nums}
+.progress{height:4px;background:var(--line)}
+.progress i{display:block;height:100%;background:var(--sun);transition:width .25s}
+.section{padding:16px;display:flex;flex-direction:column;gap:12px}
+.section + .section{border-top:1px dashed var(--line)}
+.who{font:700 .7rem var(--f-sign);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0}
+.say{font-family:var(--f-sign);font-weight:700;font-size:clamp(1.3rem,5.6vw,1.7rem);line-height:1.28;margin:0;text-wrap:balance}
+.masked{margin:0;color:var(--muted);font-style:italic}
+.ru{color:var(--muted);margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:10px;padding:9px 14px;font:600 .92rem var(--f-body);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.btn:hover{border-color:var(--teal)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.btn.good{background:var(--good);border-color:var(--good);color:var(--surface)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn svg,.iconbtn svg,.mic svg{width:18px;height:18px;fill:currentColor;flex:none}
+.grade{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grade .btn{min-height:52px;font-size:1rem}
+:is(.btn,.chip,.tab,.seg button,.switch,.iconbtn,.mic,textarea,input,select):focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.answer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:stretch}
+textarea{width:100%;min-height:92px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:12px;font:600 1.05rem var(--f-sign);line-height:1.4;background:var(--surface-2);color:var(--ink)}
+textarea::placeholder{color:var(--muted);font-weight:500}
+.mic{appearance:none;width:76px;border-radius:14px;border:0;background:var(--teal);color:var(--teal-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:700 .72rem var(--f-body);cursor:pointer;padding:8px 4px}
+.mic svg{width:30px;height:30px}
+.mic.on{background:var(--rec);color:#ffffff;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--rec) 45%, transparent)}50%{box-shadow:0 0 0 10px color-mix(in srgb, var(--rec) 0%, transparent)}}
+.help{font-size:.82rem;color:var(--muted);margin:0}
+.err{font-size:.9rem;color:var(--bad);margin:0}
+.yours{margin:0;font:600 1rem var(--f-sign);color:var(--ink);background:var(--surface-2);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere}
+.yours span{display:block;font:600 .7rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.verdict{border-radius:10px;padding:10px 12px;font-weight:600;margin:0}
+.verdict.good{background:var(--good-bg);color:var(--good)}
+.verdict.warn{background:var(--warn-bg);color:var(--warn)}
+.verdict.bad{background:var(--bad-bg);color:var(--bad)}
+.keys{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.keys .lbl{font-size:.82rem;color:var(--muted);margin-right:2px}
+.key{font:600 .8rem var(--f-mono);padding:3px 8px;border-radius:6px;border:1px dashed var(--muted);color:var(--muted)}
+.key.ok{background:var(--good-bg);border:1px solid transparent;color:var(--good)}
+.models{display:flex;flex-direction:column;gap:8px}
+.model{background:var(--surface-2);border-radius:10px;padding:12px;display:flex;gap:12px;align-items:flex-start}
+.model.best{box-shadow:inset 0 0 0 2px var(--good)}
+.model > div{min-width:0;display:flex;flex-direction:column;gap:2px}
+.model .tag{font:700 .66rem var(--f-sign);letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.model .en{font:700 1.08rem var(--f-sign);line-height:1.35;overflow-wrap:anywhere}
+.model .ruline{color:var(--muted);font-size:.92rem}
+.iconbtn{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--teal);display:grid;place-items:center;cursor:pointer}
+.note{font-size:.9rem;color:var(--muted);border-left:3px solid var(--sun);padding-left:10px;margin:0}
+.chart{background:var(--chart-bg);color:var(--chart-ink);border-radius:10px;padding:14px 10px 16px;text-align:center;border:1px solid var(--line)}
+.chart small{display:block;font:700 .66rem var(--f-sign);letter-spacing:.16em;text-transform:uppercase;opacity:.6;margin-bottom:4px}
+.chart .letters{font:800 clamp(1.7rem,9vw,2.5rem) var(--f-sign);letter-spacing:.38em;margin-right:-.38em}
+.end h2{margin:0;font-size:1.35rem;text-wrap:balance}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:var(--surface-2);border-radius:10px;padding:10px 12px;min-width:0}
+.stat b{display:block;font:700 1.5rem var(--f-mono);font-variant-numeric:tabular-nums}
+.stat span{font-size:.82rem;color:var(--muted)}
+.banner{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:.9rem;margin:0;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.banner .btn{min-height:36px;padding:6px 12px}
+.group{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.group h2{font-size:1rem;margin:0;padding:14px 16px 10px}
+.group p.sub{margin:-6px 16px 8px;font-size:.88rem;color:var(--muted)}
+.prow{display:flex;gap:12px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}
+.prow > div{min-width:0}
+.prow .en{font:700 1rem var(--f-sign);overflow-wrap:anywhere}
+.prow .ruline{color:var(--muted);font-size:.9rem}
+.form{display:grid;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-weight:600;font-size:.92rem}
+.field input,.field select{border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:500 1rem var(--f-body);background:var(--surface-2);color:var(--ink);width:100%;min-width:0}
+.check{display:flex;gap:10px;align-items:center;font-weight:600;font-size:.92rem}
+.check input{width:22px;height:22px;accent-color:var(--teal);flex:none}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:520px){.two{grid-template-columns:1fr}.where{text-align:left}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Florida · Driver License Service Center</p>
+      <h1>Тренажёр DMV для CDL</h1>
+    </div>
+    <button class="btn primary" id="install" data-act="install" hidden>Установить приложение</button>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Разделы">
+    <button class="tab" role="tab" id="tab-train" data-act="tab" data-v="train" aria-selected="true">Тренировка</button>
+    <button class="tab" role="tab" id="tab-phrases" data-act="tab" data-v="phrases" aria-selected="false">Фразы и слова</button>
+    <button class="tab" role="tab" id="tab-me" data-act="tab" data-v="me" aria-selected="false">Мои данные</button>
+  </nav>
+
+  <p class="banner" id="no-tts" hidden>Озвучка недоступна в этом браузере. Открой приложение в Chrome.</p>
+
+  <section class="panel" id="panel-train">
+    <p class="banner" id="setup-hint" hidden><span>Впиши имя и месяц переезда, чтобы образцы ответов были про тебя.</span><button class="btn" data-act="tab" data-v="me">Мои данные</button></p>
+    <div class="scenes" id="scenes"></div>
+    <div class="opts">
+      <div class="seg" role="group" aria-label="Порядок вопросов">
+        <button data-act="order" data-v="seq" id="ord-seq" aria-pressed="true">По порядку</button>
+        <button data-act="order" data-v="mix" id="ord-mix" aria-pressed="false">Вперемешку</button>
+      </div>
+      <div class="toggles">
+        <button class="switch" id="talk-toggle" data-act="talk" aria-pressed="false"><span class="track"></span>Разговор без рук</button>
+        <button class="switch" id="listen-toggle" data-act="listen" aria-pressed="false"><span class="track"></span>Только на слух</button>
+      </div>
+    </div>
+    <article class="card" id="card" aria-live="polite"></article>
+  </section>
+
+  <section class="panel" id="panel-phrases" hidden></section>
+
+  <section class="panel" id="panel-me" hidden>
+    <div class="form">
+      <p class="help">Эти данные подставляются в образцы ответов и хранятся только в этом телефоне.</p>
+      <div class="two">
+        <div class="field"><label for="set-name">Имя и фамилия для «My name is…»</label><input id="set-name" placeholder="Pavel ..." autocomplete="off"></div>
+        <div class="field"><label for="set-time">Время записи</label><input id="set-time" placeholder="10:30" autocomplete="off"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="set-cls">Класс твоего NY CDL</label>
+          <select id="set-cls"><option value="A">Class A</option><option value="B">Class B</option><option value="C">Class C</option></select></div>
+        <div class="field"><label for="set-moved">Когда переехал во Флориду (по-английски)</label><input id="set-moved" placeholder="March 2025" autocomplete="off"></div>
+      </div>
+      <div class="field"><label for="set-id">Документ личности (по-английски)</label><input id="set-id" list="id-list" autocomplete="off">
+        <datalist id="id-list"><option value="passport"><option value="green card"><option value="U.S. passport"><option value="naturalization certificate"></datalist></div>
+      <div class="two">
+        <div class="field"><label for="set-voice">Голос</label><select id="set-voice"><option value="">Автоматически (US English)</option></select></div>
+        <div class="field"><label for="set-rate">Скорость речи</label>
+          <select id="set-rate"><option value="normal">Обычная</option><option value="slow">Медленная</option><option value="fast">Как в жизни (быстрее)</option></select></div>
+      </div>
+      <label class="check" for="set-auto"><input type="checkbox" id="set-auto">Озвучивать вопрос сразу при показе</label>
+      <p class="help">Приложение работает без интернета после первого запуска. Распознаванию голоса обычно нужен интернет.</p>
+      <div><button class="btn" id="reset-prog" data-act="reset">Сбросить прогресс</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var SCENES=[
+  {id:1,name:"Вход и регистрация"},
+  {id:2,name:"У окна: зачем пришёл"},
+  {id:3,name:"Документы"},
+  {id:4,name:"Анкета CDL"},
+  {id:5,name:"Зрение, фото, оплата"},
+  {id:6,name:"Если нужны тесты"},
+  {id:7,name:"Если не понял"}
+];
+var CDL="cdl|c d l|cdls";
+var CLE="class e|class ee";
+
+var CARDS=[
+/* Scene 1 */
+{id:"c1",s:1,p:"Hi, do you have an appointment?",r:"Здравствуйте, вы записаны?",a:[
+  {en:"Yes, I have an appointment at {time}. My name is {name}.",ru:"Да, у меня запись на {time}. Меня зовут {name}.",k:["yes","appointment","{name}"]},
+  {en:"No, I don't have an appointment. Can I be seen today?",ru:"Нет, я не записан. Меня могут принять сегодня?",k:["no","appointment","today"]}]},
+{id:"c2",s:1,p:"What are you here for today?",r:"С каким вопросом вы сегодня?",a:[
+  {en:"I'd like to upgrade my Class E license to a CDL.",ru:"Я хочу повысить права Class E до CDL.",k:["upgrade|get",CLE,CDL]}],
+  n:"Главная фраза визита. Выучи её первой."},
+{id:"c3",s:1,p:"Can I see your driver's license?",r:"Покажите, пожалуйста, ваши права.",a:[
+  {en:"Sure, here you go.",ru:"Конечно, вот.",k:["here|sure"]}]},
+{id:"c4",s:1,p:"Have a seat. Watch the screen for your number.",r:"Присаживайтесь. Следите за экраном, там появится ваш номер.",a:[
+  {en:"Thank you. Where should I wait?",ru:"Спасибо. Где мне подождать?",k:["thank|thanks","wait"]}]},
+{id:"c5",s:1,p:"Sorry, CDL services are by appointment only.",r:"Извините, CDL оформляем только по записи.",a:[
+  {en:"How can I make an appointment? Online?",ru:"Как записаться? Через интернет?",k:["how","appointment"]}]},
+/* Scene 2 */
+{id:"c6",s:2,p:"Good morning. How can I help you?",r:"Доброе утро. Чем могу помочь?",a:[
+  {en:"Good morning. I used to have a CDL from New York. It expired on July 5th, 2026.",ru:"Доброе утро. Раньше у меня был CDL из Нью-Йорка. Он истёк 5 июля 2026.",k:[CDL,"new york","expired"]}],
+  n:"Дату произноси так: July fifth, twenty twenty-six."},
+{id:"c7",s:2,p:"Okay. And what license do you have now?",r:"Хорошо. А какие права у вас сейчас?",a:[
+  {en:"Now I have a Florida Class E license, and I'd like to get my CDL back.",ru:"Сейчас у меня права Флориды Class E, и я хочу вернуть CDL.",k:[CLE,CDL,"back"]}]},
+{id:"c8",s:2,p:"What class was your New York CDL?",r:"Какой класс был у вашего нью-йоркского CDL?",a:[
+  {en:"It was Class {cls}.",ru:"Class {cls}.",k:["class {cls}"]}],
+  n:"Класс меняется во вкладке «Мои данные»."},
+{id:"c9",s:2,p:"Did you have any endorsements or restrictions?",r:"Были ли у вас отметки или ограничения?",a:[
+  {en:"No endorsements and no restrictions.",ru:"Ни отметок, ни ограничений.",k:["no","endorsements|endorsement","restrictions|restriction"]}],
+  n:"Endorsement — отметка в правах (например, H или N). Restriction — ограничение."},
+{id:"c10",s:2,p:"When did you move to Florida?",r:"Когда вы переехали во Флориду?",a:[
+  {en:"I moved here in {moved}.",ru:"Я переехал сюда ({moved}).",k:["moved","{moved}"]}],
+  n:"Месяц и год впиши во вкладке «Мои данные»."},
+{id:"c11",s:2,p:"Why didn't you transfer your CDL?",r:"Почему вы не перевели свой CDL?",a:[
+  {en:"My New York CDL expired, so I got a regular Class E license here.",ru:"Мой CDL истёк, поэтому здесь мне выдали обычные права Class E.",k:["expired",CLE]}]},
+{id:"c12",s:2,p:"Okay, let me check your record.",r:"Хорошо, сейчас проверю ваши данные.",a:[
+  {en:"Thank you. Do I need to take any tests?",ru:"Спасибо. Мне нужно сдавать какие-нибудь тесты?",k:["need","tests|test"]}]},
+{id:"c13",s:2,p:"Your CDL expired less than a year ago. You'll just need a vision test and your medical card.",r:"CDL истёк меньше года назад. Нужны только проверка зрения и медкарта.",a:[
+  {en:"Great. Here is my medical card.",ru:"Отлично. Вот моя медкарта.",k:["medical card|medical"]}]},
+{id:"c14",s:2,p:"You'll need to pass the knowledge tests and get a learner's permit first.",r:"Сначала нужно сдать письменные тесты и получить ученическое разрешение.",a:[
+  {en:"I understand. Can you tell me why? My CDL expired less than a year ago.",ru:"Понимаю. Можете объяснить почему? Мой CDL истёк меньше года назад.",k:["why","less than a year|year"]},
+  {en:"I understand. What's the next step?",ru:"Понимаю. Какой следующий шаг?",k:["next step|next"]}]},
+/* Scene 3 */
+{id:"c15",s:3,p:"I need your proof of identity and your Social Security number.",r:"Мне нужны документ, удостоверяющий личность, и номер социального страхования.",a:[
+  {en:"Here is my {idDoc} and my Social Security card.",ru:"Вот мой документ ({idDoc}) и карточка социального страхования.",k:["here","social security"]}]},
+{id:"c16",s:3,p:"And two proofs of your Florida address.",r:"И два подтверждения вашего адреса во Флориде.",a:[
+  {en:"Here's a utility bill and a bank statement.",ru:"Вот счёт за коммунальные услуги и банковская выписка.",k:["utility bill|bill","bank statement|statement"]}]},
+{id:"c17",s:3,p:"For a CDL, I also need one proof of Florida residency from this list.",r:"Для CDL нужен ещё один документ о резидентстве Флориды из этого списка.",a:[
+  {en:"Here is my document from the list.",ru:"Вот мой документ из списка.",k:["here"]},
+  {en:"Which documents are on this list? Can you show me?",ru:"Какие документы в этом списке? Покажете?",k:["which","list"]}],
+  n:"Вместо «document from the list» назови свой документ."},
+{id:"c18",s:3,p:"Do you have your medical card?",r:"У вас есть медкарта?",a:[
+  {en:"Yes, here is my medical examiner's certificate.",ru:"Да, вот моя медицинская справка.",k:["yes","medical"]}]},
+{id:"c19",s:3,p:"Is this your current address?",r:"Это ваш текущий адрес?",a:[
+  {en:"Yes, that's correct.",ru:"Да, верно.",k:["yes|correct"]}]},
+{id:"c20",s:3,p:"I'm sorry, this document is not acceptable.",r:"Извините, этот документ не подходит.",a:[
+  {en:"Why not? What's wrong with it?",ru:"Почему? Что с ним не так?",k:["why|wrong"]}]},
+{id:"c21",s:3,p:"It's too old. Do you have a more recent one?",r:"Он слишком старый. Есть более свежий?",a:[
+  {en:"I have it on my phone. Can I show it on my phone, or does it have to be printed?",ru:"Он у меня в телефоне. Можно показать с телефона или нужна распечатка?",k:["phone","printed|print"]}]},
+{id:"c22",s:3,p:"You'll need to bring a new one next time.",r:"В следующий раз нужно принести новый.",a:[
+  {en:"What exactly do I need to bring? Could you write it down for me?",ru:"Что именно мне нужно принести? Можете мне записать?",k:["bring","write"]},
+  {en:"Do I need to make a new appointment?",ru:"Мне нужно записываться заново?",k:["appointment"]}]},
+/* Scene 4 */
+{id:"c23",s:4,p:"Have you had a driver's license in any other state in the last 10 years?",r:"Были ли у вас права в других штатах за последние 10 лет?",a:[
+  {en:"Yes, New York. That's the only other state.",ru:"Да, в Нью-Йорке. Больше нигде.",k:["yes","new york"]}]},
+{id:"c24",s:4,p:"Is your license suspended, revoked, or canceled anywhere?",r:"Ваши права где-либо приостановлены, отозваны или аннулированы?",a:[
+  {en:"No, never.",ru:"Нет, никогда.",k:["no"]}],
+  n:"Suspended — приостановлены, revoked — отозваны, canceled — аннулированы."},
+{id:"c25",s:4,p:"Any tickets or accidents in the last three years?",r:"Были штрафы или ДТП за последние три года?",a:[
+  {en:"No, I have a clean record.",ru:"Нет, у меня чистая история.",k:["no","clean record|clean"]}]},
+{id:"c26",s:4,p:"Will you drive interstate or only within Florida?",r:"Будете ездить между штатами или только по Флориде?",a:[
+  {en:"Interstate. I'll self-certify as non-excepted interstate.",ru:"Между штатами. Выбираю категорию «non-excepted interstate».",k:["interstate","non excepted|nonexcepted|non accepted"]},
+  {en:"Which category should I choose if I'm going to work for a trucking company?",ru:"Какую категорию выбрать, если я буду работать в транспортной компании?",k:["category","company|trucking"]}],
+  n:"Non-excepted interstate — обычный выбор для работы в транспортной компании."},
+{id:"c27",s:4,p:"Did you complete entry-level driver training?",r:"Вы проходили обучение ELDT?",a:[
+  {en:"Yes, I completed ELDT before I got my New York CDL in 2024.",ru:"Да, проходил перед получением CDL в Нью-Йорке в 2024.",k:["yes","eldt|e l d t|training","2024|new york"]}]},
+{id:"c28",s:4,p:"I'll check the national database.",r:"Я проверю по национальной базе.",a:[
+  {en:"Okay, thank you.",ru:"Хорошо, спасибо.",k:["okay|ok|thank|thanks"]}]},
+{id:"c29",s:4,p:"Please read this and sign the application.",r:"Прочитайте и подпишите заявление.",a:[
+  {en:"Can I take a minute to read it?",ru:"Можно минуту, чтобы прочитать?",k:["minute","read"]}]},
+/* Scene 5 */
+{id:"c30",s:5,type:"vision",p:"Look into the machine and read line number 3.",r:"Посмотрите в аппарат и прочитайте третью строку.",a:[],
+  n:"Буквы называй по-английски. Можно сказать в микрофон или напечатать через пробел: E F P T O Z."},
+{id:"c31",s:5,p:"Tell me when you see a light flash, left or right.",r:"Скажите, когда увидите вспышку, слева или справа.",a:[
+  {en:"Left. Right. Now.",ru:"Слева. Справа. Сейчас.",k:["left|right|now"]}],
+  n:"Отвечай одним словом, как только увидишь вспышку."},
+{id:"c32",s:5,p:"Do you wear glasses or contacts when you drive?",r:"Вы водите в очках или линзах?",a:[
+  {en:"No, I don't.",ru:"Нет.",k:["no"]},
+  {en:"Yes, I wear glasses.",ru:"Да, я ношу очки.",k:["yes","glasses|contacts"]}]},
+{id:"c33",s:5,p:"Would you like to be an organ donor?",r:"Хотите стать донором органов?",a:[
+  {en:"Yes, please.",ru:"Да, пожалуйста.",k:["yes"]},
+  {en:"No, thank you.",ru:"Нет, спасибо.",k:["no"]}]},
+{id:"c34",s:5,p:"Would you like to register to vote?",r:"Хотите зарегистрироваться как избиратель?",a:[
+  {en:"No, thank you.",ru:"Нет, спасибо.",k:["no"]}]},
+{id:"c35",s:5,p:"Would you like to add an emergency contact?",r:"Хотите указать контакт на экстренный случай?",a:[
+  {en:"Yes. The name is ___, and the phone number is ___.",ru:"Да. Имя: ___, телефон: ___.",k:["yes","name|phone"]},
+  {en:"No, thank you.",ru:"Нет, спасибо.",k:["no"]}]},
+{id:"c36",s:5,p:"Are you a veteran?",r:"Вы ветеран?",a:[
+  {en:"No, I'm not.",ru:"Нет.",k:["no"]}]},
+{id:"c37",s:5,p:"Step over to the camera, please. Take off your hat and glasses.",r:"Подойдите к камере, пожалуйста. Снимите кепку и очки.",a:[
+  {en:"Okay. Like this?",ru:"Хорошо. Так?",k:["okay|ok|like this"]}]},
+{id:"c38",s:5,p:"Your total is $81.25. Card or cash?",say:"Your total is eighty-one twenty-five. Card or cash?",r:"С вас 81,25 доллара. Картой или наличными?",a:[
+  {en:"Card, please.",ru:"Картой, пожалуйста.",k:["card"]}],
+  n:"Суммы называют парами цифр: eighty-one twenty-five = 81,25."},
+{id:"c39",s:5,p:"Here's your temporary license. Your card will be mailed to you.",r:"Вот временные права. Пластиковая карточка придёт по почте.",a:[
+  {en:"How long is it valid? Can I drive a truck with it?",ru:"Сколько они действуют? Можно с ними водить грузовик?",k:["valid|how long","truck"]}]},
+/* Scene 6 */
+{id:"c40",s:6,p:"You'll need to pass the knowledge tests to get a learner's permit.",r:"Нужно сдать письменные тесты, чтобы получить ученическое разрешение.",a:[
+  {en:"Which tests do I need to take?",ru:"Какие тесты мне нужно сдать?",k:["which","tests|test"]}]},
+{id:"c41",s:6,p:"General Knowledge, Air Brakes, and Combination Vehicles.",r:"Общие знания, пневмотормоза и автопоезда.",a:[
+  {en:"Can I take them today?",ru:"Можно сдать их сегодня?",k:["today"]}]},
+{id:"c42",s:6,p:"The test is in English only. No phones, no notes.",r:"Тест только на английском. Без телефона и записей.",a:[
+  {en:"Understood. What score do I need to pass?",ru:"Понятно. Сколько нужно набрать, чтобы сдать?",k:["score|pass"]}]},
+{id:"c43",s:6,p:"You need eighty percent to pass.",r:"Чтобы сдать, нужно 80 процентов.",a:[
+  {en:"Okay. How many questions are there?",ru:"Хорошо. Сколько всего вопросов?",k:["how many","questions|question"]}],
+  n:"General Knowledge: 50 вопросов, можно ошибиться не больше 10 раз."},
+{id:"c44",s:6,p:"Congratulations, you passed. Here's your learner's permit. You must hold it for at least 14 days before the skills test.",r:"Поздравляю, вы сдали. Вот ваше ученическое разрешение. Его нужно иметь минимум 14 дней до экзамена по вождению.",a:[
+  {en:"Where do I take the skills test?",ru:"Где сдают экзамен по вождению?",k:["where","skills test|skills|skill test|driving test"]}]},
+{id:"c45",s:6,p:"I'm sorry, you didn't pass this one.",r:"К сожалению, этот тест вы не сдали.",a:[
+  {en:"When can I retake it, and how much is the fee?",ru:"Когда можно пересдать и сколько это стоит?",k:["retake|again","fee|how much"]}]},
+/* Scene 7 */
+{id:"c46",s:7,rate:1.2,p:"Alright, so once your MEC posts we'll run the self-cert, then you'll head over to window nine.",r:"Так, как только ваша медсправка появится в системе, мы оформим самосертификацию, и потом вы пройдёте к окну 9.",a:[
+  {en:"Sorry, could you speak a little slower, please?",ru:"Извините, можно чуть медленнее?",k:["sorry|slower|repeat"]},
+  {en:"Sorry, could you repeat that, please?",ru:"Извините, повторите, пожалуйста.",k:["repeat"]}],
+  n:"Сотрудник может говорить быстро и сокращениями. MEC — medical examiner's certificate, то есть медкарта."},
+{id:"c47",s:7,p:"I'll need a proof of residency from the CDL list.",r:"Мне нужен документ о резидентстве из списка для CDL.",a:[
+  {en:"Sorry, I didn't understand. What does proof of residency mean?",ru:"Извините, не понял. Что значит proof of residency?",k:["what does|what is","mean|residency"]},
+  {en:"Could you write it down for me?",ru:"Можете мне это записать?",k:["write"]}]},
+{id:"c48",s:7,p:"Okay, you're all set for today.",r:"Так, на сегодня всё.",a:[
+  {en:"Just to make sure: what do I need to do next?",ru:"Уточню: что мне делать дальше?",k:["next"]},
+  {en:"Is there anything else I need?",ru:"Мне нужно что-то ещё?",k:["anything else"]}]},
+{id:"c49",s:7,p:"We can't help you with that at this window.",r:"С этим мы не поможем в этом окне.",a:[
+  {en:"Where should I go, then?",ru:"Куда мне тогда обратиться?",k:["where"]},
+  {en:"Can I speak with a supervisor, please?",ru:"Можно поговорить со старшим сотрудником?",k:["supervisor"]}]}
+];
+
+var KEY_PHRASES=[
+  ["I'd like to upgrade my Class E license to a CDL.","Я хочу повысить права Class E до CDL."],
+  ["I used to have a Class {cls} CDL from New York. It expired on July 5th, 2026.","У меня был CDL класса {cls} из Нью-Йорка, он истёк 5 июля 2026."],
+  ["Do I need to take any tests?","Мне нужно сдавать тесты?"],
+  ["Here is my medical card.","Вот моя медкарта."],
+  ["I completed ELDT before I got my New York CDL.","Я проходил ELDT перед получением CDL в Нью-Йорке."],
+  ["What's the next step?","Какой следующий шаг?"],
+  ["Sorry, could you repeat that, please?","Извините, повторите, пожалуйста."],
+  ["Could you write it down for me?","Можете мне это записать?"]
+];
+var RESCUE=[
+  ["Sorry, could you repeat that, please?","Извините, повторите, пожалуйста."],
+  ["Could you speak a little slower, please?","Говорите чуть медленнее, пожалуйста."],
+  ["Sorry, I didn't understand. What does that mean?","Извините, не понял. Что это значит?"],
+  ["Could you write it down for me?","Можете мне это записать?"],
+  ["Do you mean the medical card?","Вы имеете в виду медкарту?"],
+  ["Just to make sure: I need to come back with this document, right?","Уточню: мне нужно вернуться с этим документом, верно?"],
+  ["Is there anything else I need?","Мне нужно что-то ещё?"],
+  ["Where can I find this on the website?","Где это найти на сайте?"],
+  ["Can I speak with a supervisor, please?","Можно поговорить со старшим сотрудником?"]
+];
+var VOCAB=[
+  ["upgrade / downgrade","повышение / понижение категории"],
+  ["endorsement","отметка в правах (H, N, T и т. д.)"],
+  ["restriction","ограничение"],
+  ["medical card, DOT physical","медкарта, медосмотр для водителей"],
+  ["learner's permit, CLP","ученическое разрешение"],
+  ["knowledge test","письменный (теоретический) тест"],
+  ["skills test, road test","экзамен по вождению"],
+  ["pre-trip inspection","предрейсовый осмотр машины"],
+  ["proof of address, proof of residency","подтверждение адреса, резидентства"],
+  ["suspended, revoked","приостановлены, отозваны"],
+  ["interstate, intrastate","между штатами, внутри штата"],
+  ["retest, retake","пересдача"],
+  ["fee","пошлина, сбор"]
+];
+
+/* ---------- storage ---------- */
+var LS="dmvcdl.v1.";
+function load(k,d){try{var v=localStorage.getItem(LS+k);return v?JSON.parse(v):d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(LS+k,JSON.stringify(v))}catch(e){}}
+var DEF={name:"",time:"10:30",cls:"A",moved:"",idDoc:"passport",rate:"normal",auto:true,listen:false,talk:false,voice:"",order:"seq"};
+var set=Object.assign({},DEF,load("set",{}));
+var prog=load("prog",{});
+
+/* ---------- helpers ---------- */
+var byId={};CARDS.forEach(function(c){byId[c.id]=c});
+function $(s){return document.querySelector(s)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]})}
+function fill(s){return String(s).replace(/\{(\w+)\}/g,function(m,k){var v=String(set[k]||"").trim();return v||"___"})}
+function norm(s){return String(s).toLowerCase().replace(/[’‘`]/g,"'").replace(/[^a-z0-9' ]+/g," ").replace(/\s+/g," ").trim()}
+function has(t,key){return key.split("|").some(function(alt){var a=norm(alt);return a && (" "+t+" ").indexOf(" "+a+" ")>-1})}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var x=a[i];a[i]=a[j];a[j]=x}return a}
+var PLAY='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+var SPEAKER='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
+var MIC='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>';
+var STOP='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10H7z"/></svg>';
+
+/* ---------- vision chart ---------- */
+var VL="EFPTOZLDC";
+var LNAME={E:"и",F:"эф",P:"пи",T:"ти",O:"оу",Z:"зи",L:"эл",D:"ди",C:"си"};
+var SPELL={ee:"E",e:"E",ef:"F",eff:"F",f:"F",pee:"P",pi:"P",p:"P",tee:"T",tea:"T",ti:"T",t:"T",oh:"O",o:"O",zee:"Z",zed:"Z",z:"Z",el:"L",ell:"L",l:"L",dee:"D",di:"D",d:"D",see:"C",sea:"C",cee:"C",si:"C",c:"C"};
+function genLetters(){var o=[];while(o.length<6){var c=VL[Math.floor(Math.random()*VL.length)];if(o[o.length-1]!==c)o.push(c)}return o}
+function parseLetters(s){var out=[];norm(s).split(" ").forEach(function(tok){if(!tok)return;if(SPELL[tok])out.push(SPELL[tok]);else if(/^[efptozldc]+$/.test(tok))tok.split("").forEach(function(ch){out.push(ch.toUpperCase())})});return out}
+
+/* ---------- speech out ---------- */
+var hasTTS=("speechSynthesis" in window)&&(typeof SpeechSynthesisUtterance!=="undefined");
+var voices=[];
+function loadVoices(){
+  if(!hasTTS)return;
+  try{voices=window.speechSynthesis.getVoices().filter(function(v){return /^en([-_]|$)/i.test(v.lang)})}catch(e){voices=[]}
+  var sel=$("#set-voice");
+  sel.innerHTML='<option value="">Автоматически (US English)</option>'+voices.map(function(v){return '<option value="'+esc(v.name)+'"'+(v.name===set.voice?" selected":"")+'>'+esc(v.name)+' · '+esc(v.lang)+'</option>'}).join("");
+}
+function pickVoice(){
+  if(set.voice){for(var i=0;i<voices.length;i++)if(voices[i].name===set.voice)return voices[i]}
+  var us=voices.filter(function(v){return /en[-_]US/i.test(v.lang)});
+  return us.find(function(v){return /google|samantha|aria|jenny|natural/i.test(v.name)})||us[0]||voices[0]||null;
+}
+function baseRate(){return set.rate==="slow"?0.75:set.rate==="fast"?1.1:0.95}
+function speak(text,rate,onend){
+  if(!hasTTS){if(onend)onend();return}
+  try{
+    window.speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(text);u.lang="en-US";var v=pickVoice();if(v)u.voice=v;u.rate=rate||baseRate();
+    var done=false;function fin(){if(done)return;done=true;if(onend)onend()}
+    u.onend=fin;u.onerror=fin;
+    window.speechSynthesis.speak(u);
+  }catch(e){if(onend)onend()}
+}
+
+/* ---------- speech in ---------- */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+var rec=null,listening=false,heard=[];
+function micMsg(code){
+  if(code==="not-allowed"||code==="service-not-allowed")return "Нет доступа к микрофону. Долго нажми на иконку приложения → «О приложении» → «Разрешения» → «Микрофон» → «Разрешить».";
+  if(code==="no-speech")return "Ничего не услышал. Нажми на микрофон и говори сразу.";
+  if(code==="network")return "Для распознавания голоса нужен интернет. Без него напечатай ответ.";
+  if(code==="audio-capture")return "Микрофон занят другим приложением или не найден.";
+  if(code==="aborted")return "";
+  return "Голос не распознан. Попробуй ещё раз или напечатай ответ.";
+}
+function stopListen(){if(rec&&listening){try{rec.stop()}catch(e){}}}
+function startListen(){
+  if(!SR||listening||!current()||st.revealed)return;
+  try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(e){}
+  var cardId=current().id;
+  rec=new SR();rec.lang="en-US";rec.interimResults=true;rec.maxAlternatives=4;rec.continuous=false;
+  heard=[];st.err="";
+  var finals="";
+  rec.onresult=function(ev){
+    var interim="";
+    for(var i=ev.resultIndex;i<ev.results.length;i++){
+      var r=ev.results[i];
+      if(r.isFinal){
+        var alts=[];for(var j=0;j<r.length;j++)alts.push((finals+r[j].transcript).trim());
+        finals+=r[0].transcript+" ";heard=alts;
+      }else interim+=r[0].transcript;
+    }
+    st.typed=(finals+interim).trim();
+    var ta=$("#answer");if(ta)ta.value=st.typed;
+  };
+  rec.onerror=function(ev){st.err=micMsg(ev.error)};
+  rec.onend=function(){
+    listening=false;rec=null;
+    var c=current();
+    if(!c||c.id!==cardId||st.revealed){renderCard();return}
+    if(st.typed.trim())check(heard);else renderCard();
+  };
+  try{rec.start();listening=true}catch(e){listening=false;st.err=micMsg("")}
+  renderCard();
+}
+
+/* ---------- state ---------- */
+var st={tab:"train",scene:1,mode:"all",queue:[],pos:0,known:0,again:0,typed:"",revealed:false,result:null,showRu:false,showText:false,letters:null,err:"",interacted:false};
+
+function sceneCards(scene){return CARDS.filter(function(c){return scene==="all"||c.s===scene})}
+function buildQueue(mode){
+  st.mode=mode||"all";
+  var ids=sceneCards(st.scene).map(function(c){return c.id});
+  if(st.mode==="hard")ids=ids.filter(function(id){return prog[id]!=="known"});
+  if(set.order==="mix")shuffle(ids);
+  st.queue=ids;st.pos=0;st.known=0;st.again=0;resetCard();
+}
+function resetCard(){stopListen();st.typed="";st.revealed=false;st.result=null;st.showRu=false;st.showText=false;st.letters=null;st.err=""}
+function current(){return st.pos<st.queue.length?byId[st.queue[st.pos]]:null}
+
+function evaluate(c,typed){
+  var t=norm(typed);
+  if(c.type==="vision"){
+    var got=parseLetters(typed);
+    var hits=st.letters.map(function(L,i){return {label:L,ok:got[i]===L}});
+    return {i:0,score:hits.filter(function(h){return h.ok}).length/hits.length,hits:hits};
+  }
+  var best=null;
+  c.a.forEach(function(ans,i){
+    var keys=ans.k.filter(function(k){var m=k.match(/\{(\w+)\}/);return !m||String(set[m[1]]||"").trim()}).map(fill);
+    var hits=keys.map(function(k){return {label:k.split("|")[0],ok:has(t,k)}});
+    var score=keys.length?hits.filter(function(h){return h.ok}).length/keys.length:1;
+    if(!best||score>best.score)best={i:i,score:score,hits:hits};
+  });
+  return best;
+}
+
+/* ---------- render ---------- */
+function renderTabs(){
+  ["train","phrases","me"].forEach(function(t){
+    $("#tab-"+t).setAttribute("aria-selected",String(st.tab===t));
+    $("#panel-"+t).hidden=st.tab!==t;
+  });
+}
+function renderScenes(){
+  var all=CARDS.length,allK=CARDS.filter(function(c){return prog[c.id]==="known"}).length;
+  var h='<button class="chip" data-act="scene" data-v="all" aria-pressed="'+(st.scene==="all")+'">Все сцены <span class="n">'+allK+'/'+all+'</span></button>';
+  SCENES.forEach(function(sc){
+    var cs=sceneCards(sc.id),k=cs.filter(function(c){return prog[c.id]==="known"}).length;
+    h+='<button class="chip" data-act="scene" data-v="'+sc.id+'" aria-pressed="'+(st.scene===sc.id)+'">'+sc.id+'. '+esc(sc.name)+' <span class="n">'+k+'/'+cs.length+'</span></button>';
+  });
+  $("#scenes").innerHTML=h;
+  $("#ord-seq").setAttribute("aria-pressed",String(set.order!=="mix"));
+  $("#ord-mix").setAttribute("aria-pressed",String(set.order==="mix"));
+  $("#listen-toggle").setAttribute("aria-pressed",String(!!set.listen));
+  $("#talk-toggle").setAttribute("aria-pressed",String(!!set.talk));
+  $("#talk-toggle").hidden=!SR;
+  $("#setup-hint").hidden=!!(String(set.name).trim()&&String(set.moved).trim());
+}
+function sceneLabel(){
+  if(st.scene==="all")return "Все сцены";
+  var sc=SCENES.find(function(x){return x.id===st.scene});return "Сцена "+sc.id+". "+sc.name;
+}
+function modelHtml(tag,en,ru,act,idx,best){
+  return '<div class="model'+(best?' best':'')+'"><button class="iconbtn" data-act="'+act+'" data-i="'+idx+'" aria-label="Послушать ответ"'+(hasTTS?'':' disabled')+'>'+PLAY+'</button><div><span class="tag">'+esc(tag)+'</span><span class="en">'+esc(en)+'</span><span class="ruline">'+esc(ru)+'</span></div></div>';
+}
+function renderCard(){
+  var box=$("#card");
+  var n=st.queue.length;
+  if(!n){
+    box.innerHTML='<div class="band"><div class="serving"><small>Now serving</small><span class="ticket">A-00</span></div><div class="where"><b>'+esc(sceneLabel())+'</b></div></div><div class="section end"><h2>Здесь всё выучено</h2><p class="ru">Все вопросы этой сцены отмечены как «Знаю». Пройди сцену целиком ещё раз или выбери другую.</p><div class="btns"><button class="btn primary" data-act="restart">Пройти всю сцену</button></div></div>';
+    return;
+  }
+  if(st.pos>=n){
+    var nextBtn=(st.scene!=="all"&&st.scene<SCENES.length)?'<button class="btn" data-act="next-scene">Следующая сцена</button>':'';
+    var left=sceneCards(st.scene).filter(function(c){return prog[c.id]!=="known"}).length;
+    box.innerHTML='<div class="band"><div class="serving"><small>Now serving</small><span class="ticket">DONE</span></div><div class="where"><b>'+esc(sceneLabel())+'</b><span>'+n+' из '+n+'</span></div></div><div class="progress"><i style="width:100%"></i></div>'+
+      '<div class="section end"><h2>Сцена пройдена</h2><div class="stats"><div class="stat"><b>'+st.known+'</b><span>знаю</span></div><div class="stat"><b>'+st.again+'</b><span>на повтор</span></div><div class="stat"><b>'+left+'</b><span>не выучено</span></div></div>'+
+      '<div class="btns"><button class="btn primary" data-act="restart">Пройти заново</button>'+(left?'<button class="btn" data-act="hard">Только невыученные</button>':'')+nextBtn+'</div></div>';
+    return;
+  }
+  var c=current();
+  var sc=SCENES.find(function(x){return x.id===c.s});
+  if(c.type==="vision"&&!st.letters)st.letters=genLetters();
+  var hidden=set.listen&&!st.showText&&!st.revealed&&c.type!=="vision";
+  var h='';
+  h+='<div class="band"><div class="serving"><small>Now serving</small><span class="ticket">A-'+String(st.pos+1).padStart(2,"0")+'</span></div><div class="where"><b>Сцена '+sc.id+'. '+esc(sc.name)+'</b><span>'+(st.pos+1)+' из '+n+'</span></div></div>';
+  h+='<div class="progress"><i style="width:'+(st.pos/n*100).toFixed(1)+'%"></i></div>';
+  /* clerk */
+  h+='<div class="section"><p class="who">Сотрудник</p>';
+  h+=hidden?'<p class="masked">Текст скрыт. Послушай вопрос и ответь.</p>':'<p class="say">'+esc(c.p)+'</p>';
+  if(c.type==="vision")h+='<div class="chart" aria-label="Строка таблицы для проверки зрения"><small>Line 3</small><div class="letters">'+st.letters.join("")+'</div></div>';
+  h+='<div class="btns"><button class="btn primary" data-act="play-q"'+(hasTTS?'':' disabled')+'>'+SPEAKER+'Слушать</button><button class="btn" data-act="play-slow"'+(hasTTS?'':' disabled')+'>Медленнее</button>';
+  if(hidden)h+='<button class="btn" data-act="show-text">Текст</button>';
+  h+='<button class="btn" data-act="toggle-ru" aria-pressed="'+st.showRu+'">'+(st.showRu?'Скрыть перевод':'Перевод')+'</button></div>';
+  if(st.showRu)h+='<p class="ru">'+esc(c.r)+'</p>';
+  h+='</div>';
+  /* me */
+  h+='<div class="section"><p class="who">Ты</p>';
+  if(!st.revealed){
+    h+='<div class="answer"><textarea id="answer" placeholder="'+(SR?'Скажи в микрофон или напечатай':'Твой ответ по-английски')+'" spellcheck="false" autocapitalize="sentences">'+esc(st.typed)+'</textarea>';
+    if(SR)h+='<button class="mic'+(listening?' on':'')+'" data-act="mic" aria-pressed="'+listening+'" aria-label="'+(listening?'Остановить запись':'Ответить голосом')+'">'+(listening?STOP+'Стоп':MIC+'Сказать')+'</button>';
+    h+='</div>';
+    if(listening)h+='<p class="help">Слушаю… Говори по-английски. Проверю, как только замолчишь.</p>';
+    if(st.err)h+='<p class="err">'+esc(st.err)+'</p>';
+    h+='<div class="btns"><button class="btn primary" data-act="check">Проверить</button><button class="btn" data-act="aloud">Показать образец</button></div>';
+  }else{
+    if(st.typed.trim())h+='<p class="yours"><span>Твой ответ</span>'+esc(st.typed)+'</p>';
+    var r=st.result;
+    if(r){
+      var cls=r.score>=0.999?"good":r.score>=0.5?"warn":"bad";
+      var msg=c.type==="vision"
+        ?(cls==="good"?"Все буквы верно.":cls==="warn"?"Почти. Сверь буквы с образцом и послушай, как они звучат.":"Много ошибок. Послушай образец и повтори буквы вслух.")
+        :(cls==="good"?"Отлично: все ключевые слова на месте.":cls==="warn"?"Почти. Сверь недостающие слова с образцом.":"Пока далеко от образца. Прочитай его вслух пару раз.");
+      h+='<p class="verdict '+cls+'">'+msg+'</p>';
+      if(r.hits.length)h+='<div class="keys"><span class="lbl">'+(c.type==="vision"?"Буквы:":"Ключевые слова:")+'</span>'+r.hits.map(function(x){return '<span class="key'+(x.ok?' ok':'')+'">'+(x.ok?'✓ ':'')+esc(x.label)+'</span>'}).join("")+'</div>';
+    }
+    h+='<div class="models">';
+    if(c.type==="vision"){
+      h+=modelHtml("Образец",st.letters.join(", "),st.letters.map(function(L){return LNAME[L]}).join(", "),"play-letters",0,false);
+    }else{
+      var bi=r?r.i:-1;
+      c.a.forEach(function(a,i){h+=modelHtml(i===0?"Образец":"Тоже подходит",fill(a.en),fill(a.ru),"play-a",i,c.a.length>1&&i===bi&&r&&r.score>0)});
+    }
+    h+='</div>';
+    if(c.n)h+='<p class="note">'+esc(c.n)+'</p>';
+    h+='<div class="grade"><button class="btn good" data-act="know" id="btn-know">Знаю</button><button class="btn" data-act="again">Ещё раз позже</button></div>';
+  }
+  h+='</div>';
+  box.innerHTML=h;
+}
+function renderPhrases(){
+  function group(title,sub,rows,act){
+    return '<div class="group"><h2>'+esc(title)+'</h2>'+(sub?'<p class="sub">'+esc(sub)+'</p>':'')+rows.map(function(r,i){var en=fill(r[0]);return '<div class="prow"><button class="iconbtn" data-act="'+act+'" data-i="'+i+'" aria-label="Послушать"'+(hasTTS?'':' disabled')+'>'+PLAY+'</button><div><div class="en">'+esc(en)+'</div><div class="ruline">'+esc(r[1])+'</div></div></div>'}).join("")+'</div>';
+  }
+  $("#panel-phrases").innerHTML=
+    group("Мои ключевые фразы","Этих восьми фраз хватит, чтобы провести весь визит.",KEY_PHRASES,"pk")+
+    group("Если не понял","Переспрашивать нормально. Лучше уточнить, чем уйти без нужного документа.",RESCUE,"pr")+
+    group("Слова, которые могут прозвучать","",VOCAB,"pv");
+}
+function renderMe(){
+  $("#set-name").value=set.name;$("#set-time").value=set.time;$("#set-cls").value=set.cls;
+  $("#set-moved").value=set.moved;$("#set-id").value=set.idDoc;$("#set-rate").value=set.rate;$("#set-auto").checked=!!set.auto;
+  loadVoices();
+}
+function render(){renderTabs();renderScenes();renderCard()}
+
+/* ---------- actions ---------- */
+function speakQuestion(slow,onend){
+  var c=current();if(!c)return;
+  var r=slow?0.65:baseRate()*(c.rate||1);
+  speak(c.say||c.p,r,onend);
+}
+function afterShow(){
+  if(!st.interacted||!current()||st.tab!=="train")return;
+  if(set.talk&&SR){speakQuestion(false,function(){setTimeout(function(){if(st.tab==="train")startListen()},250)});return}
+  if(set.auto)setTimeout(function(){speakQuestion(false)},120);
+}
+function goNext(){st.pos++;resetCard();renderScenes();renderCard();afterShow()}
+function check(alts){
+  var c=current();if(!c)return;
+  if(!st.typed.trim()){st.err=SR?"Скажи ответ в микрофон, напечатай его или нажми «Показать образец».":"Напиши ответ или нажми «Показать образец».";renderCard();return}
+  var best=evaluate(c,st.typed);
+  (alts||[]).forEach(function(t){var r=evaluate(c,t);if(r.score>best.score){best=r;st.typed=t}});
+  st.result=best;st.revealed=true;st.err="";renderCard();
+  if(set.talk&&hasTTS){
+    if(c.type==="vision")speak(st.letters.join(". ")+".",0.8);
+    else speak(fill(c.a[best.i].en));
+  }
+}
+function grade(known){
+  var c=current();if(!c)return;
+  if(known){prog[c.id]="known";st.known++}
+  else{prog[c.id]="again";st.again++;var at=Math.min(st.pos+4,st.queue.length);st.queue.splice(at,0,c.id)}
+  save("prog",prog);goNext();
+}
+
+document.addEventListener("pointerdown",function(){st.interacted=true},true);
+document.addEventListener("keydown",function(){st.interacted=true},true);
+
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]");if(!b)return;
+  var act=b.getAttribute("data-act"),v=b.getAttribute("data-v"),i=+b.getAttribute("data-i");
+  var c=current();
+  switch(act){
+    case "tab":stopListen();try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(x){};st.tab=v;renderTabs();if(v==="phrases")renderPhrases();if(v==="me")renderMe();if(v==="train")renderScenes();window.scrollTo(0,0);break;
+    case "scene":st.scene=v==="all"?"all":+v;buildQueue("all");render();afterShow();break;
+    case "order":set.order=v;save("set",set);buildQueue(st.mode);render();afterShow();break;
+    case "listen":set.listen=!set.listen;save("set",set);renderScenes();renderCard();break;
+    case "talk":set.talk=!set.talk;save("set",set);renderScenes();if(set.talk&&!st.revealed)afterShow();else stopListen();break;
+    case "play-q":stopListen();speakQuestion(false);break;
+    case "play-slow":stopListen();speakQuestion(true);break;
+    case "show-text":st.showText=true;renderCard();break;
+    case "toggle-ru":st.showRu=!st.showRu;renderCard();break;
+    case "mic":if(listening)stopListen();else startListen();break;
+    case "check":stopListen();check();break;
+    case "aloud":stopListen();st.result=null;st.revealed=true;st.err="";renderCard();break;
+    case "play-a":if(c)speak(fill(c.a[i].en));break;
+    case "play-letters":if(st.letters)speak(st.letters.join(". ")+".",0.8);break;
+    case "know":grade(true);break;
+    case "again":grade(false);break;
+    case "restart":buildQueue("all");render();afterShow();break;
+    case "hard":buildQueue("hard");render();afterShow();break;
+    case "next-scene":st.scene=st.scene+1;buildQueue("all");render();afterShow();break;
+    case "pk":speak(fill(KEY_PHRASES[i][0]));break;
+    case "pr":speak(RESCUE[i][0]);break;
+    case "pv":speak(VOCAB[i][0].replace(/,/g,". "));break;
+    case "install":
+      if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;$("#install").hidden=true})}
+      break;
+    case "reset":
+      if(b.getAttribute("data-armed")==="1"){prog={};save("prog",prog);b.removeAttribute("data-armed");b.textContent="Прогресс сброшен";setTimeout(function(){b.textContent="Сбросить прогресс"},2500);buildQueue("all");renderScenes();renderCard();}
+      else{b.setAttribute("data-armed","1");b.textContent="Нажми ещё раз, чтобы сбросить";setTimeout(function(){if(b.getAttribute("data-armed")==="1"){b.removeAttribute("data-armed");b.textContent="Сбросить прогресс"}},4000)}
+      break;
+  }
+});
+document.addEventListener("input",function(e){
+  if(e.target.id==="answer"){st.typed=e.target.value;if(st.err){st.err="";var er=document.querySelector(".err");if(er)er.remove()}}
+});
+document.addEventListener("keydown",function(e){
+  if(e.target.id==="answer"&&e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();check()}
+});
+function bindSetting(id,key,isCheck){
+  var el=$(id);
+  el.addEventListener(isCheck?"change":"input",function(){set[key]=isCheck?el.checked:el.value;save("set",set)});
+  if(!isCheck)el.addEventListener("change",function(){set[key]=el.value;save("set",set)});
+}
+bindSetting("#set-name","name");bindSetting("#set-time","time");bindSetting("#set-cls","cls");bindSetting("#set-moved","moved");
+bindSetting("#set-id","idDoc");bindSetting("#set-rate","rate");bindSetting("#set-auto","auto",true);
+$("#set-voice").addEventListener("change",function(){set.voice=this.value;save("set",set)});
+document.addEventListener("visibilitychange",function(){if(document.hidden){stopListen();try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(e){}}});
+
+/* ---------- install + offline ---------- */
+var deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();deferredPrompt=e;$("#install").hidden=false});
+window.addEventListener("appinstalled",function(){deferredPrompt=null;$("#install").hidden=true});
+if("serviceWorker" in navigator&&location.protocol!=="file:"){
+  window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+}
+
+/* ---------- boot ---------- */
+if(!hasTTS)$("#no-tts").hidden=false;
+else{try{window.speechSynthesis.onvoiceschanged=loadVoices}catch(e){}}
+buildQueue("all");
+renderMe();
+render();
+})();
+</script>
+</body>
+</html>
