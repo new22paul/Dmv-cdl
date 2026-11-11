@@ -119,9 +119,20 @@ textarea::placeholder{color:var(--muted);font-weight:500}
 .model .ruline{color:var(--muted);font-size:.92rem}
 .iconbtn{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--teal);display:grid;place-items:center;cursor:pointer}
 .note{font-size:.9rem;color:var(--muted);border-left:3px solid var(--sun);padding-left:10px;margin:0}
-.chart{background:var(--chart-bg);color:var(--chart-ink);border-radius:10px;padding:14px 10px 16px;text-align:center;border:1px solid var(--line)}
-.chart small{display:block;font:700 .66rem var(--f-sign);letter-spacing:.16em;text-transform:uppercase;opacity:.6;margin-bottom:4px}
-.chart .letters{font:800 clamp(1.7rem,9vw,2.5rem) var(--f-sign);letter-spacing:.38em;margin-right:-.38em}
+.chart{background:var(--chart-bg);color:var(--chart-ink);border-radius:10px;padding:12px 10px 14px;border:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.vrow{position:relative;display:flex;justify-content:center;align-items:center;min-height:1.4em}
+.vn{position:absolute;left:4px;font:700 .72rem var(--f-mono);opacity:.5}
+.vl{font-family:var(--f-sign);font-weight:800;letter-spacing:.32em;margin-right:-.32em;line-height:1.15}
+.l1 .vl{font-size:clamp(2.1rem,11vw,2.9rem)}
+.l2 .vl{font-size:clamp(1.75rem,9vw,2.35rem)}
+.l3 .vl{font-size:clamp(1.4rem,7vw,1.85rem)}
+.l4 .vl{font-size:clamp(1.12rem,5.4vw,1.45rem)}
+.l5 .vl{font-size:clamp(.92rem,4.3vw,1.15rem)}
+.letgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:2px 16px 16px}
+.letbtn{appearance:none;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:10px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-height:58px}
+.letbtn b{font:800 1.45rem var(--f-sign);line-height:1}
+.letbtn span{font-size:.78rem;color:var(--muted)}
+.letbtn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 .end h2{margin:0;font-size:1.35rem;text-wrap:balance}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .stat{background:var(--surface-2);border-radius:10px;padding:10px 12px;min-width:0}
@@ -302,8 +313,20 @@ var CARDS=[
 {id:"c29",s:4,p:"Please read this and sign the application.",r:"Прочитайте и подпишите заявление.",a:[
   {en:"Can I take a minute to read it?",ru:"Можно минуту, чтобы прочитать?",k:["minute","read"]}]},
 /* Scene 5 */
-{id:"c30",s:5,type:"vision",p:"Look into the machine and read line number 3.",r:"Посмотрите в аппарат и прочитайте третью строку.",a:[],
-  n:"Буквы называй по-английски. Можно сказать в микрофон или напечатать через пробел: E F P T O Z."},
+{id:"c30",s:5,type:"vision",vm:"num",p:"Look into the machine and read line number {n}.",r:"Посмотрите в аппарат и прочитайте строку номер {n}.",a:[],
+  n:"Строки пронумерованы слева. Читай слева направо и называй буквы по-английски. Можно сказать в микрофон или напечатать через пробел: C D H."},
+{id:"c30a",s:5,type:"vision",vm:"ord",p:"Please read the {nth} line for me.",r:"Прочитайте, пожалуйста, {nthRu} строку.",a:[],
+  n:"First, second, third, fourth, fifth — первая, вторая, третья, четвёртая, пятая."},
+{id:"c30b",s:5,type:"vision",vm:"small",p:"Read the smallest line you can see.",r:"Прочитайте самую мелкую строку, которую видите.",a:[],
+  n:"Здесь годится любая строка, но на проверке стараются прочитать самую мелкую, которую видно чётко."},
+{id:"c30c",s:5,type:"vision",vm:"eye",p:"Now cover your left eye and read line {n}.",r:"Теперь закройте левый глаз и прочитайте строку {n}.",a:[],
+  n:"Cover your left eye — закройте левый глаз. Cover your right eye — закройте правый."},
+{id:"c30d",s:5,p:"Okay, go ahead.",r:"Хорошо, начинайте.",a:[
+  {en:"Which line should I read?",ru:"Какую строку мне читать?",k:["which line|what line"]},
+  {en:"Left to right?",ru:"Слева направо?",k:["left to right"]}],
+  n:"Если сотрудник не назвал строку, переспроси. Читают всегда слева направо."},
+{id:"c30e",s:5,p:"You skipped a letter. Do you want to try that line again?",r:"Вы пропустили букву. Хотите прочитать эту строку ещё раз?",a:[
+  {en:"Yes, please. Can I start again from the beginning?",ru:"Да, пожалуйста. Можно начать сначала?",k:["yes|again|start"]}]},
 {id:"c31",s:5,p:"Tell me when you see a light flash, left or right.",r:"Скажите, когда увидите вспышку, слева или справа.",a:[
   {en:"Left. Right. Now.",ru:"Слева. Справа. Сейчас.",k:["left|right|now"]}],
   n:"Отвечай одним словом, как только увидишь вспышку."},
@@ -378,6 +401,23 @@ var RESCUE=[
   ["Where can I find this on the website?","Где это найти на сайте?"],
   ["Can I speak with a supervisor, please?","Можно поговорить со старшим сотрудником?"]
 ];
+var VIS_CLERK=[
+  ["Look into the machine.","Посмотрите в аппарат."],
+  ["Read line number three.","Прочитайте строку номер три."],
+  ["Read the third line.","Прочитайте третью строку."],
+  ["Read the smallest line you can see.","Прочитайте самую мелкую строку, которую видите."],
+  ["Now cover your left eye.","Теперь закройте левый глаз."],
+  ["Now the right eye.","Теперь правый глаз."],
+  ["Read the next line down.","Прочитайте следующую строку ниже."],
+  ["Tell me when you see a light flash.","Скажите, когда увидите вспышку."]
+];
+var VIS_YOU=[
+  ["Which line, sorry?","Какую строку, извините?"],
+  ["Which line should I read?","Какую строку мне читать?"],
+  ["Left to right?","Слева направо?"],
+  ["Can I start again?","Можно начать сначала?"],
+  ["Should I keep my glasses on?","Мне не снимать очки?"]
+];
 var VOCAB=[
   ["upgrade / downgrade","повышение / понижение категории"],
   ["endorsement","отметка в правах (H, N, T и т. д.)"],
@@ -416,11 +456,28 @@ var MIC='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3
 var STOP='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10H7z"/></svg>';
 
 /* ---------- vision chart ---------- */
-var VL="EFPTOZLDC";
-var LNAME={E:"и",F:"эф",P:"пи",T:"ти",O:"оу",Z:"зи",L:"эл",D:"ди",C:"си"};
-var SPELL={ee:"E",e:"E",ef:"F",eff:"F",f:"F",pee:"P",pi:"P",p:"P",tee:"T",tea:"T",ti:"T",t:"T",oh:"O",o:"O",zee:"Z",zed:"Z",z:"Z",el:"L",ell:"L",l:"L",dee:"D",di:"D",d:"D",see:"C",sea:"C",cee:"C",si:"C",c:"C"};
-function genLetters(){var o=[];while(o.length<6){var c=VL[Math.floor(Math.random()*VL.length)];if(o[o.length-1]!==c)o.push(c)}return o}
-function parseLetters(s){var out=[];norm(s).split(" ").forEach(function(tok){if(!tok)return;if(SPELL[tok])out.push(SPELL[tok]);else if(/^[efptozldc]+$/.test(tok))tok.split("").forEach(function(ch){out.push(ch.toUpperCase())})});return out}
+var VL="CDHKNORSVZEFPTL";
+var LNAME={C:"си",D:"ди",H:"эйч",K:"кей",N:"эн",O:"оу",R:"ар",S:"эс",V:"ви",Z:"зи",E:"и",F:"эф",P:"пи",T:"ти",L:"эл"};
+var SPELL={ee:"E",e:"E",ef:"F",eff:"F",f:"F",pee:"P",pea:"P",pi:"P",p:"P",tee:"T",tea:"T",ti:"T",t:"T",oh:"O",o:"O",zee:"Z",zed:"Z",z:"Z",el:"L",ell:"L",elle:"L",l:"L",dee:"D",di:"D",d:"D",see:"C",sea:"C",cee:"C",si:"C",c:"C",
+  aitch:"H",eitch:"H",age:"H",h:"H",kay:"K",k:"K",en:"N",n:"N",ar:"R",are:"R",our:"R",r:"R",es:"S",ess:"S",s:"S",vee:"V",ve:"V",v:"V"};
+var VLEN=[2,3,4,5,6];
+var ORD=["first","second","third","fourth","fifth"],ORDRU=["первую","вторую","третью","четвёртую","пятую"];
+function genLine(n){var o=[];while(o.length<n){var c=VL[Math.floor(Math.random()*VL.length)];if(o.indexOf(c)<0)o.push(c)}return o}
+function makeVis(c){
+  var lines=VLEN.map(genLine);
+  var t=c.vm==="small"?-1:1+Math.floor(Math.random()*4);
+  var p=c.p.replace("{n}",t+1).replace("{nth}",ORD[t]||"");
+  var r=c.r.replace("{n}",t+1).replace("{nthRu}",ORDRU[t]||"");
+  return {lines:lines,t:t,p:p,r:r};
+}
+function vis(c){if(!st.vis)st.vis=makeVis(c);return st.vis}
+function qText(c){return c.type==="vision"?vis(c).p:c.p}
+function qSay(c){return c.type==="vision"?vis(c).p:(c.say||c.p)}
+function qRu(c){return c.type==="vision"?vis(c).r:c.r}
+function modelIdx(){var v=st.vis;if(st.result&&st.result.line!=null)return st.result.line;return v.t>=0?v.t:v.lines.length-1}
+function chartHtml(v){return '<div class="chart" aria-label="Таблица для проверки зрения">'+v.lines.map(function(line,i){return '<div class="vrow l'+(i+1)+'"><span class="vn">'+(i+1)+'</span><span class="vl">'+line.join("")+'</span></div>'}).join("")+'</div>'}
+function sayLetters(line){speak(line.join(". ")+".",0.8)}
+function parseLetters(s){var out=[];norm(s).split(" ").forEach(function(tok){if(!tok)return;if(SPELL[tok])out.push(SPELL[tok]);else if(/^[cdhknorsvzefptl]+$/.test(tok))tok.split("").forEach(function(ch){out.push(ch.toUpperCase())})});return out}
 
 /* ---------- speech out ---------- */
 var hasTTS=("speechSynthesis" in window)&&(typeof SpeechSynthesisUtterance!=="undefined");
@@ -491,7 +548,7 @@ function startListen(){
 }
 
 /* ---------- state ---------- */
-var st={tab:"train",scene:1,mode:"all",queue:[],pos:0,known:0,again:0,typed:"",revealed:false,result:null,showRu:false,showText:false,letters:null,err:"",interacted:false};
+var st={tab:"train",scene:1,mode:"all",queue:[],pos:0,known:0,again:0,typed:"",revealed:false,result:null,showRu:false,showText:false,vis:null,err:"",interacted:false};
 
 function sceneCards(scene){return CARDS.filter(function(c){return scene==="all"||c.s===scene})}
 function buildQueue(mode){
@@ -501,15 +558,20 @@ function buildQueue(mode){
   if(set.order==="mix")shuffle(ids);
   st.queue=ids;st.pos=0;st.known=0;st.again=0;resetCard();
 }
-function resetCard(){stopListen();st.typed="";st.revealed=false;st.result=null;st.showRu=false;st.showText=false;st.letters=null;st.err=""}
+function resetCard(){stopListen();st.typed="";st.revealed=false;st.result=null;st.showRu=false;st.showText=false;st.vis=null;st.err=""}
 function current(){return st.pos<st.queue.length?byId[st.queue[st.pos]]:null}
 
 function evaluate(c,typed){
   var t=norm(typed);
   if(c.type==="vision"){
-    var got=parseLetters(typed);
-    var hits=st.letters.map(function(L,i){return {label:L,ok:got[i]===L}});
-    return {i:0,score:hits.filter(function(h){return h.ok}).length/hits.length,hits:hits};
+    var v=vis(c),got=parseLetters(typed);
+    var sc=v.lines.map(function(line){return line.filter(function(L,i){return got[i]===L}).length/line.length});
+    var li=v.t;
+    if(li<0){li=0;sc.forEach(function(s,i){if(s>=sc[li])li=i})}
+    var other=-1;
+    if(v.t>=0&&sc[li]<1)sc.forEach(function(s,i){if(i!==li&&s===1)other=i});
+    var hits=v.lines[li].map(function(L,i){return {label:L,ok:got[i]===L}});
+    return {i:0,score:sc[li],hits:hits,line:li,other:other};
   }
   var best=null;
   c.a.forEach(function(ans,i){
@@ -567,19 +629,18 @@ function renderCard(){
   }
   var c=current();
   var sc=SCENES.find(function(x){return x.id===c.s});
-  if(c.type==="vision"&&!st.letters)st.letters=genLetters();
-  var hidden=set.listen&&!st.showText&&!st.revealed&&c.type!=="vision";
+  var hidden=set.listen&&!st.showText&&!st.revealed;
   var h='';
   h+='<div class="band"><div class="serving"><small>Now serving</small><span class="ticket">A-'+String(st.pos+1).padStart(2,"0")+'</span></div><div class="where"><b>Сцена '+sc.id+'. '+esc(sc.name)+'</b><span>'+(st.pos+1)+' из '+n+'</span></div></div>';
   h+='<div class="progress"><i style="width:'+(st.pos/n*100).toFixed(1)+'%"></i></div>';
   /* clerk */
   h+='<div class="section"><p class="who">Сотрудник</p>';
-  h+=hidden?'<p class="masked">Текст скрыт. Послушай вопрос и ответь.</p>':'<p class="say">'+esc(c.p)+'</p>';
-  if(c.type==="vision")h+='<div class="chart" aria-label="Строка таблицы для проверки зрения"><small>Line 3</small><div class="letters">'+st.letters.join("")+'</div></div>';
+  h+=hidden?'<p class="masked">Текст скрыт. Послушай вопрос и ответь.</p>':'<p class="say">'+esc(qText(c))+'</p>';
+  if(c.type==="vision")h+=chartHtml(vis(c));
   h+='<div class="btns"><button class="btn primary" data-act="play-q"'+(hasTTS?'':' disabled')+'>'+SPEAKER+'Слушать</button><button class="btn" data-act="play-slow"'+(hasTTS?'':' disabled')+'>Медленнее</button>';
   if(hidden)h+='<button class="btn" data-act="show-text">Текст</button>';
   h+='<button class="btn" data-act="toggle-ru" aria-pressed="'+st.showRu+'">'+(st.showRu?'Скрыть перевод':'Перевод')+'</button></div>';
-  if(st.showRu)h+='<p class="ru">'+esc(c.r)+'</p>';
+  if(st.showRu)h+='<p class="ru">'+esc(qRu(c))+'</p>';
   h+='</div>';
   /* me */
   h+='<div class="section"><p class="who">Ты</p>';
@@ -595,15 +656,20 @@ function renderCard(){
     var r=st.result;
     if(r){
       var cls=r.score>=0.999?"good":r.score>=0.5?"warn":"bad";
-      var msg=c.type==="vision"
-        ?(cls==="good"?"Все буквы верно.":cls==="warn"?"Почти. Сверь буквы с образцом и послушай, как они звучат.":"Много ошибок. Послушай образец и повтори буквы вслух.")
-        :(cls==="good"?"Отлично: все ключевые слова на месте.":cls==="warn"?"Почти. Сверь недостающие слова с образцом.":"Пока далеко от образца. Прочитай его вслух пару раз.");
+      var msg;
+      if(c.type==="vision"){
+        var vv=st.vis;
+        if(r.other>=0){cls="warn";msg="Ты прочитал строку "+(r.other+1)+", а сотрудник просил строку "+(vv.t+1)+". Послушай вопрос ещё раз."}
+        else if(cls==="good")msg=vv.t<0?(r.line<vv.lines.length-1?"Строка "+(r.line+1)+" верно. На проверке попробуй строку помельче.":"Самая мелкая строка, все буквы верно."):"Все буквы верно.";
+        else msg=cls==="warn"?"Почти. Сверь буквы с образцом и послушай, как они звучат.":"Много ошибок. Проверь, ту ли строку читаешь, и послушай образец.";
+      }else msg=cls==="good"?"Отлично: все ключевые слова на месте.":cls==="warn"?"Почти. Сверь недостающие слова с образцом.":"Пока далеко от образца. Прочитай его вслух пару раз.";
       h+='<p class="verdict '+cls+'">'+msg+'</p>';
       if(r.hits.length)h+='<div class="keys"><span class="lbl">'+(c.type==="vision"?"Буквы:":"Ключевые слова:")+'</span>'+r.hits.map(function(x){return '<span class="key'+(x.ok?' ok':'')+'">'+(x.ok?'✓ ':'')+esc(x.label)+'</span>'}).join("")+'</div>';
     }
     h+='<div class="models">';
     if(c.type==="vision"){
-      h+=modelHtml("Образец",st.letters.join(", "),st.letters.map(function(L){return LNAME[L]}).join(", "),"play-letters",0,false);
+      var mi=modelIdx(),ml=st.vis.lines[mi];
+      h+=modelHtml("Образец · строка "+(mi+1),ml.join(", "),ml.map(function(L){return LNAME[L]}).join(", "),"play-letters",0,false);
     }else{
       var bi=r?r.i:-1;
       c.a.forEach(function(a,i){h+=modelHtml(i===0?"Образец":"Тоже подходит",fill(a.en),fill(a.ru),"play-a",i,c.a.length>1&&i===bi&&r&&r.score>0)});
@@ -622,6 +688,10 @@ function renderPhrases(){
   $("#panel-phrases").innerHTML=
     group("Мои ключевые фразы","Этих восьми фраз хватит, чтобы провести весь визит.",KEY_PHRASES,"pk")+
     group("Если не понял","Переспрашивать нормально. Лучше уточнить, чем уйти без нужного документа.",RESCUE,"pr")+
+    '<div class="group"><h2>Буквы на проверке зрения</h2><p class="sub">Нажми на букву, чтобы услышать, как она звучит по-английски.</p><div class="letgrid">'+
+      VL.split("").map(function(L){return '<button class="letbtn" data-act="plet" data-v="'+L+'" aria-label="Буква '+L+'"'+(hasTTS?'':' disabled')+'><b>'+L+'</b><span>'+LNAME[L]+'</span></button>'}).join("")+'</div></div>'+
+    group("Что скажет сотрудник на проверке зрения","",VIS_CLERK,"pvc")+
+    group("Что можно спросить на проверке зрения","",VIS_YOU,"pvy")+
     group("Слова, которые могут прозвучать","",VOCAB,"pv");
 }
 function renderMe(){
@@ -635,7 +705,7 @@ function render(){renderTabs();renderScenes();renderCard()}
 function speakQuestion(slow,onend){
   var c=current();if(!c)return;
   var r=slow?0.65:baseRate()*(c.rate||1);
-  speak(c.say||c.p,r,onend);
+  speak(qSay(c),r,onend);
 }
 function afterShow(){
   if(!st.interacted||!current()||st.tab!=="train")return;
@@ -650,7 +720,7 @@ function check(alts){
   (alts||[]).forEach(function(t){var r=evaluate(c,t);if(r.score>best.score){best=r;st.typed=t}});
   st.result=best;st.revealed=true;st.err="";renderCard();
   if(set.talk&&hasTTS){
-    if(c.type==="vision")speak(st.letters.join(". ")+".",0.8);
+    if(c.type==="vision")sayLetters(st.vis.lines[modelIdx()]);
     else speak(fill(c.a[best.i].en));
   }
 }
@@ -682,7 +752,10 @@ document.addEventListener("click",function(e){
     case "check":stopListen();check();break;
     case "aloud":stopListen();st.result=null;st.revealed=true;st.err="";renderCard();break;
     case "play-a":if(c)speak(fill(c.a[i].en));break;
-    case "play-letters":if(st.letters)speak(st.letters.join(". ")+".",0.8);break;
+    case "play-letters":if(st.vis)sayLetters(st.vis.lines[modelIdx()]);break;
+    case "plet":speak(v,0.85);break;
+    case "pvc":speak(VIS_CLERK[i][0]);break;
+    case "pvy":speak(VIS_YOU[i][0]);break;
     case "know":grade(true);break;
     case "again":grade(false);break;
     case "restart":buildQueue("all");render();afterShow();break;
