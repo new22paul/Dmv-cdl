@@ -133,6 +133,22 @@ textarea::placeholder{color:var(--muted);font-weight:500}
 .letbtn b{font:800 1.45rem var(--f-sign);line-height:1}
 .letbtn span{font-size:.78rem;color:var(--muted)}
 .letbtn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.slead{margin:0;color:var(--muted);font-size:.92rem}
+.sgroup{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;scroll-margin-top:12px}
+.sgroup h2{margin:0;padding:11px 16px;background:var(--band);color:var(--band-ink);font:700 .98rem var(--f-body);display:flex;justify-content:space-between;gap:12px}
+.sgroup h2 span{font:600 .78rem var(--f-mono);opacity:.7;font-variant-numeric:tabular-nums}
+.srow{display:grid;grid-template-columns:4.6em minmax(0,1fr);gap:8px 10px;padding:12px 14px;border-top:1px solid var(--line)}
+.sgroup h2 + .srow{border-top:0}
+.slbl{font:700 .64rem var(--f-sign);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-top:5px}
+.slbl.you{color:var(--teal)}
+.stxt{min-width:0;display:flex;flex-direction:column;gap:6px}
+.sen{appearance:none;background:none;border:0;padding:0;margin:0;text-align:left;font:700 1.02rem/1.35 var(--f-sign);color:var(--ink);cursor:pointer;overflow-wrap:anywhere}
+.sen.ans{color:var(--teal)}
+.sen svg{width:14px;height:14px;fill:currentColor;opacity:.55;vertical-align:-1px;margin-left:6px}
+.sen:focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:4px}
+.sru{display:block;color:var(--muted);font-size:.9rem;line-height:1.4;margin-top:1px}
+.sor{display:block;font:700 .64rem var(--f-sign);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.snote{grid-column:2;margin:0;font-size:.84rem;color:var(--muted);border-left:3px solid var(--sun);padding-left:8px}
 .end h2{margin:0;font-size:1.35rem;text-wrap:balance}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .stat{background:var(--surface-2);border-radius:10px;padding:10px 12px;min-width:0}
@@ -170,6 +186,7 @@ textarea::placeholder{color:var(--muted);font-weight:500}
 
   <nav class="tabs" role="tablist" aria-label="Разделы">
     <button class="tab" role="tab" id="tab-train" data-act="tab" data-v="train" aria-selected="true">Тренировка</button>
+    <button class="tab" role="tab" id="tab-sheet" data-act="tab" data-v="sheet" aria-selected="false">Шпаргалка</button>
     <button class="tab" role="tab" id="tab-phrases" data-act="tab" data-v="phrases" aria-selected="false">Фразы и слова</button>
     <button class="tab" role="tab" id="tab-me" data-act="tab" data-v="me" aria-selected="false">Мои данные</button>
   </nav>
@@ -191,6 +208,8 @@ textarea::placeholder{color:var(--muted);font-weight:500}
     </div>
     <article class="card" id="card" aria-live="polite"></article>
   </section>
+
+  <section class="panel" id="panel-sheet" hidden></section>
 
   <section class="panel" id="panel-phrases" hidden></section>
 
@@ -585,7 +604,7 @@ function evaluate(c,typed){
 
 /* ---------- render ---------- */
 function renderTabs(){
-  ["train","phrases","me"].forEach(function(t){
+  ["train","sheet","phrases","me"].forEach(function(t){
     $("#tab-"+t).setAttribute("aria-selected",String(st.tab===t));
     $("#panel-"+t).hidden=st.tab!==t;
   });
@@ -694,6 +713,32 @@ function renderPhrases(){
     group("Что можно спросить на проверке зрения","",VIS_YOU,"pvy")+
     group("Слова, которые могут прозвучать","",VOCAB,"pv");
 }
+/* cheat sheet: every clerk line with your answers, grouped by scene */
+var VIS_SAMPLE={en:"K, Z, R, D",ru:"Кей, зи, ар, ди — буквы этой строки слева направо."};
+function sheetQ(c){
+  if(c.type!=="vision")return {en:c.p,ru:c.r,say:c.say||c.p};
+  var p=c.p.replace("{n}","3").replace("{nth}","third"),r=c.r.replace("{n}","3").replace("{nthRu}","третью");
+  return {en:p,ru:r,say:p};
+}
+function sheetA(c){return c.type==="vision"?[VIS_SAMPLE]:c.a.map(function(a){return {en:fill(a.en),ru:fill(a.ru)}})}
+function renderSheet(){
+  var spk=SPEAKER;
+  var h='<p class="slead">Все вопросы сотрудника и твои ответы по сценам. Нажми на английскую фразу, чтобы услышать её.</p>';
+  h+='<div class="scenes">'+SCENES.map(function(sc){return '<button class="chip" data-act="sjump" data-v="'+sc.id+'">'+sc.id+'. '+esc(sc.name)+'</button>'}).join("")+'</div>';
+  SCENES.forEach(function(sc){
+    var cs=sceneCards(sc.id);
+    h+='<section class="sgroup" id="sheet-s'+sc.id+'"><h2>'+sc.id+'. '+esc(sc.name)+'<span>'+cs.length+'</span></h2>';
+    cs.forEach(function(c){
+      var q=sheetQ(c),as=sheetA(c);
+      h+='<div class="srow"><span class="slbl">Сотрудник</span><div class="stxt"><div><button class="sen" data-act="sq" data-id="'+c.id+'">'+esc(q.en)+spk+'</button><span class="sru">'+esc(q.ru)+'</span></div></div>';
+      h+='<span class="slbl you">Ты</span><div class="stxt">'+as.map(function(a,i){return (i?'<span class="sor">или</span>':'')+'<div><button class="sen ans" data-act="sa" data-id="'+c.id+'" data-i="'+i+'">'+esc(a.en)+spk+'</button><span class="sru">'+esc(a.ru)+'</span></div>'}).join("")+'</div>';
+      if(c.n)h+='<p class="snote">'+esc(c.n)+'</p>';
+      h+='</div>';
+    });
+    h+='</section>';
+  });
+  $("#panel-sheet").innerHTML=h;
+}
 function renderMe(){
   $("#set-name").value=set.name;$("#set-time").value=set.time;$("#set-cls").value=set.cls;
   $("#set-moved").value=set.moved;$("#set-id").value=set.idDoc;$("#set-rate").value=set.rate;$("#set-auto").checked=!!set.auto;
@@ -739,7 +784,7 @@ document.addEventListener("click",function(e){
   var act=b.getAttribute("data-act"),v=b.getAttribute("data-v"),i=+b.getAttribute("data-i");
   var c=current();
   switch(act){
-    case "tab":stopListen();try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(x){};st.tab=v;renderTabs();if(v==="phrases")renderPhrases();if(v==="me")renderMe();if(v==="train")renderScenes();window.scrollTo(0,0);break;
+    case "tab":stopListen();try{window.speechSynthesis&&window.speechSynthesis.cancel()}catch(x){};st.tab=v;renderTabs();if(v==="sheet")renderSheet();if(v==="phrases")renderPhrases();if(v==="me")renderMe();if(v==="train")renderScenes();window.scrollTo(0,0);break;
     case "scene":st.scene=v==="all"?"all":+v;buildQueue("all");render();afterShow();break;
     case "order":set.order=v;save("set",set);buildQueue(st.mode);render();afterShow();break;
     case "listen":set.listen=!set.listen;save("set",set);renderScenes();renderCard();break;
@@ -756,6 +801,9 @@ document.addEventListener("click",function(e){
     case "plet":speak(v,0.85);break;
     case "pvc":speak(VIS_CLERK[i][0]);break;
     case "pvy":speak(VIS_YOU[i][0]);break;
+    case "sq":var sc1=byId[b.getAttribute("data-id")];if(sc1)speak(sheetQ(sc1).say,baseRate()*(sc1.rate||1));break;
+    case "sa":var sc2=byId[b.getAttribute("data-id")];if(sc2){var aa=sheetA(sc2)[i];if(aa)speak(sc2.type==="vision"?"K. Z. R. D.":aa.en,sc2.type==="vision"?0.8:undefined)}break;
+    case "sjump":var tgt=document.getElementById("sheet-s"+v);if(tgt)tgt.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});break;
     case "know":grade(true);break;
     case "again":grade(false);break;
     case "restart":buildQueue("all");render();afterShow();break;
