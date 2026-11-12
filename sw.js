@@ -1,6 +1,6 @@
 /* Offline support. Page: network first, so updates arrive when online; cache when offline.
    Icons and fonts: cache first. */
-const CACHE = "dmv-cdl-v5";
+const CACHE = "dmv-cdl-v6";
 const CORE = [
   "./",
   "./index.html",
