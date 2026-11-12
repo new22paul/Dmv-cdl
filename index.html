@@ -36,16 +36,16 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;font-size:112.5%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1rem;line-height:1.5;-webkit-tap-highlight-color:transparent}
 .wrap{max-width:720px;margin:0 auto;padding-top:calc(env(safe-area-inset-top, 0px) + 18px);padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 48px);padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:16px}
 header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
 header > div{min-width:0}
 .eyebrow{font-family:var(--f-sign);font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin:0}
 h1{font-weight:700;font-size:clamp(1.45rem,5.4vw,2rem);line-height:1.15;margin:4px 0 0;text-wrap:balance}
-.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs{display:flex;justify-content:space-between;gap:4px;border-bottom:1px solid var(--line)}
 .tabs::-webkit-scrollbar{display:none}
-.tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;font:600 .95rem var(--f-body);color:var(--muted);cursor:pointer;margin-bottom:-1px;white-space:nowrap}
+.tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;padding:10px 2px;font:600 .84rem/1.2 var(--f-body);color:var(--muted);cursor:pointer;margin-bottom:-1px;text-align:center;flex:0 1 auto;hyphens:none}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--sun)}
 .panel{display:flex;flex-direction:column;gap:14px}
 .scenes{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:calc(-1 * max(16px, env(safe-area-inset-left, 0px)));padding-inline:max(16px, env(safe-area-inset-left, 0px));padding-block:2px}
@@ -188,7 +188,7 @@ textarea::placeholder{color:var(--muted);font-weight:500}
 <div class="wrap">
   <header>
     <div>
-      <p class="eyebrow">Florida · Driver License Service Center</p>
+      <p class="eyebrow">Florida DMV · CDL</p>
       <h1>Тренажёр DMV для CDL</h1>
     </div>
     <button class="btn primary" id="install" data-act="install" hidden>Установить приложение</button>
@@ -197,7 +197,7 @@ textarea::placeholder{color:var(--muted);font-weight:500}
   <nav class="tabs" role="tablist" aria-label="Разделы">
     <button class="tab" role="tab" id="tab-train" data-act="tab" data-v="train" aria-selected="true">Тренировка</button>
     <button class="tab" role="tab" id="tab-sheet" data-act="tab" data-v="sheet" aria-selected="false">Шпаргалка</button>
-    <button class="tab" role="tab" id="tab-phrases" data-act="tab" data-v="phrases" aria-selected="false">Фразы и слова</button>
+    <button class="tab" role="tab" id="tab-phrases" data-act="tab" data-v="phrases" aria-selected="false">Фразы</button>
     <button class="tab" role="tab" id="tab-me" data-act="tab" data-v="me" aria-selected="false">Мои данные</button>
   </nav>
 
