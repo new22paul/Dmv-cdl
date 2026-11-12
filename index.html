@@ -149,6 +149,16 @@ textarea::placeholder{color:var(--muted);font-weight:500}
 .sru{display:block;color:var(--muted);font-size:.9rem;line-height:1.4;margin-top:1px}
 .sor{display:block;font:700 .64rem var(--f-sign);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .snote{grid-column:2;margin:0;font-size:.84rem;color:var(--muted);border-left:3px solid var(--sun);padding-left:8px}
+.sbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.scount{font:600 .85rem var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.sans{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.srow.off .stxt,.srow.off .slbl,.sans.off{opacity:.45}
+.sact{grid-column:2;display:flex;justify-content:flex-start}
+.sdel{appearance:none;border:1px solid var(--bad);background:var(--bad-bg);color:var(--bad);border-radius:8px;padding:6px 12px;min-height:36px;font:600 .84rem var(--f-body);cursor:pointer;margin-top:4px}
+.sdel.back{border-color:var(--good);background:var(--good-bg);color:var(--good)}
+.sdel:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom, 0px) + 16px);width:min(520px, calc(100% - 32px));background:var(--band);color:var(--band-ink);border-radius:12px;padding:8px 8px 8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 6px 20px rgba(0,0,0,.28);z-index:20}
+.toast .btn{min-height:38px;background:transparent;border-color:transparent;color:var(--sun)}
 .end h2{margin:0;font-size:1.35rem;text-wrap:balance}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .stat{background:var(--surface-2);border-radius:10px;padding:10px 12px;min-width:0}
@@ -238,6 +248,7 @@ textarea::placeholder{color:var(--muted);font-weight:500}
     </div>
   </section>
 </div>
+<div class="toast" id="toast" role="status" hidden></div>
 
 <script>
 (function(){
@@ -721,18 +732,50 @@ function sheetQ(c){
   return {en:p,ru:r,say:p};
 }
 function sheetA(c){return c.type==="vision"?[VIS_SAMPLE]:c.a.map(function(a){return {en:fill(a.en),ru:fill(a.ru)}})}
+/* what the person removed from the cheat sheet: "c12" = whole question, "c12:1" = one answer */
+var hide=load("sheetHide",{});
+function isHid(k){return !!hide[k]}
+function setHid(k,on){if(on)hide[k]=1;else delete hide[k];save("sheetHide",hide)}
+function visAnswers(c){var n=sheetA(c).length,out=[];for(var i=0;i<n;i++)if(!isHid(c.id+":"+i))out.push(i);return out.length?out:[0]}
+var toastT=null;
+function toast(msg,k){
+  var el=$("#toast");
+  el.innerHTML='<span>'+esc(msg)+'</span>'+(k?'<button class="btn" data-act="sundo" data-k="'+esc(k)+'">Вернуть</button>':'');
+  el.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){el.hidden=true},6000);
+}
 function renderSheet(){
-  var spk=SPEAKER;
-  var h='<p class="slead">Все вопросы сотрудника и твои ответы по сценам. Нажми на английскую фразу, чтобы услышать её.</p>';
-  h+='<div class="scenes">'+SCENES.map(function(sc){return '<button class="chip" data-act="sjump" data-v="'+sc.id+'">'+sc.id+'. '+esc(sc.name)+'</button>'}).join("")+'</div>';
-  SCENES.forEach(function(sc){
-    var cs=sceneCards(sc.id);
-    h+='<section class="sgroup" id="sheet-s'+sc.id+'"><h2>'+sc.id+'. '+esc(sc.name)+'<span>'+cs.length+'</span></h2>';
-    cs.forEach(function(c){
-      var q=sheetQ(c),as=sheetA(c);
-      h+='<div class="srow"><span class="slbl">Сотрудник</span><div class="stxt"><div><button class="sen" data-act="sq" data-id="'+c.id+'">'+esc(q.en)+spk+'</button><span class="sru">'+esc(q.ru)+'</span></div></div>';
-      h+='<span class="slbl you">Ты</span><div class="stxt">'+as.map(function(a,i){return (i?'<span class="sor">или</span>':'')+'<div><button class="sen ans" data-act="sa" data-id="'+c.id+'" data-i="'+i+'">'+esc(a.en)+spk+'</button><span class="sru">'+esc(a.ru)+'</span></div>'}).join("")+'</div>';
+  var spk=SPEAKER,ed=!!st.sheetEdit,all=ed&&!!st.sheetShowHidden;
+  var removed=Object.keys(hide).length;
+  var h='<div class="sbar"><button class="btn'+(ed?' good':' primary')+'" data-act="sedit">'+(ed?'Готово':'Редактировать')+'</button>';
+  if(removed)h+='<span class="scount">Убрано: '+removed+'</span>';
+  if(ed&&removed)h+='<button class="btn" data-act="sshow" aria-pressed="'+all+'">'+(all?'Скрыть убранное':'Показать убранное')+'</button><button class="btn" data-act="srestall">Вернуть всё</button>';
+  h+='</div>';
+  h+=ed?'<p class="slead">Нажми «Убрать вопрос», чтобы удалить его из шпаргалки, или «Убрать ответ», если вариантов ответа несколько. Убранное можно вернуть. На тренировку это не влияет.</p>'
+       :'<p class="slead">Все вопросы сотрудника и твои ответы по сценам. Нажми на английскую фразу, чтобы услышать её.</p>';
+  var groups=SCENES.map(function(sc){
+    var cs=sceneCards(sc.id).filter(function(c){return all||!isHid(c.id)});
+    return {sc:sc,cs:cs};
+  }).filter(function(g){return g.cs.length});
+  h+='<div class="scenes">'+groups.map(function(g){return '<button class="chip" data-act="sjump" data-v="'+g.sc.id+'">'+g.sc.id+'. '+esc(g.sc.name)+'</button>'}).join("")+'</div>';
+  if(!groups.length)h+='<p class="slead">Все вопросы убраны. Нажми «Редактировать», затем «Вернуть всё».</p>';
+  groups.forEach(function(g){
+    var shown=g.cs.filter(function(c){return !isHid(c.id)}).length;
+    h+='<section class="sgroup" id="sheet-s'+g.sc.id+'"><h2>'+g.sc.id+'. '+esc(g.sc.name)+'<span>'+shown+'</span></h2>';
+    g.cs.forEach(function(c){
+      var q=sheetQ(c),as=sheetA(c),cardOff=isHid(c.id),vis=visAnswers(c);
+      var idx=all?as.map(function(a,i){return i}):vis;
+      h+='<div class="srow'+(cardOff?' off':'')+'"><span class="slbl">Сотрудник</span><div class="stxt"><div><button class="sen" data-act="sq" data-id="'+c.id+'">'+esc(q.en)+spk+'</button><span class="sru">'+esc(q.ru)+'</span></div></div>';
+      h+='<span class="slbl you">Ты</span><div class="stxt">'+idx.map(function(i,n){
+        var a=as[i],k=c.id+":"+i,aOff=isHid(k);
+        var tool='';
+        if(ed&&!cardOff){
+          if(aOff)tool='<button class="sdel back" data-act="srest" data-k="'+k+'">Вернуть ответ</button>';
+          else if(vis.length>1)tool='<button class="sdel" data-act="shide" data-k="'+k+'">Убрать ответ</button>';
+        }
+        return (n?'<span class="sor">или</span>':'')+'<div class="sans'+(aOff?' off':'')+'"><button class="sen ans" data-act="sa" data-id="'+c.id+'" data-i="'+i+'">'+esc(a.en)+spk+'</button><span class="sru">'+esc(a.ru)+'</span>'+tool+'</div>';
+      }).join("")+'</div>';
       if(c.n)h+='<p class="snote">'+esc(c.n)+'</p>';
+      if(ed)h+='<div class="sact">'+(cardOff?'<button class="sdel back" data-act="srest" data-k="'+c.id+'">Вернуть вопрос</button>':'<button class="sdel" data-act="shide" data-k="'+c.id+'">Убрать вопрос</button>')+'</div>';
       h+='</div>';
     });
     h+='</section>';
@@ -803,6 +846,15 @@ document.addEventListener("click",function(e){
     case "pvy":speak(VIS_YOU[i][0]);break;
     case "sq":var sc1=byId[b.getAttribute("data-id")];if(sc1)speak(sheetQ(sc1).say,baseRate()*(sc1.rate||1));break;
     case "sa":var sc2=byId[b.getAttribute("data-id")];if(sc2){var aa=sheetA(sc2)[i];if(aa)speak(sc2.type==="vision"?"K. Z. R. D.":aa.en,sc2.type==="vision"?0.8:undefined)}break;
+    case "sedit":st.sheetEdit=!st.sheetEdit;if(!st.sheetEdit)st.sheetShowHidden=false;renderSheet();break;
+    case "sshow":st.sheetShowHidden=!st.sheetShowHidden;renderSheet();break;
+    case "shide":var hk=b.getAttribute("data-k");setHid(hk,true);renderSheet();toast(hk.indexOf(":")>-1?"Ответ убран":"Вопрос убран",hk);break;
+    case "srest":setHid(b.getAttribute("data-k"),false);renderSheet();break;
+    case "sundo":setHid(b.getAttribute("data-k"),false);$("#toast").hidden=true;renderSheet();break;
+    case "srestall":
+      if(b.getAttribute("data-armed")==="1"){hide={};save("sheetHide",hide);st.sheetShowHidden=false;renderSheet();toast("Всё возвращено")}
+      else{b.setAttribute("data-armed","1");b.textContent="Нажми ещё раз";setTimeout(function(){if(b.isConnected&&b.getAttribute("data-armed")==="1"){b.removeAttribute("data-armed");b.textContent="Вернуть всё"}},4000)}
+      break;
     case "sjump":var tgt=document.getElementById("sheet-s"+v);if(tgt)tgt.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});break;
     case "know":grade(true);break;
     case "again":grade(false);break;
