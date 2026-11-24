@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Тренажёр DMV для CDL</title>
-<meta name="description" content="Диалог с сотрудником DMV Флориды: вопросы на английском с озвучкой, ответы голосом или текстом.">
+<meta name="description" content="Диалог с сотрудником DMV Флориды и проверка английского на дороге: вопросы на английском с озвучкой, ответы голосом или текстом, дорожные знаки.">
 <meta name="theme-color" content="#0e393e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -128,6 +128,15 @@ textarea::placeholder{color:var(--muted);font-weight:500}
 .l3 .vl{font-size:clamp(1.4rem,7vw,1.85rem)}
 .l4 .vl{font-size:clamp(1.12rem,5.4vw,1.45rem)}
 .l5 .vl{font-size:clamp(.92rem,4.3vw,1.15rem)}
+.sign{background:var(--chart-bg);border:1px solid var(--line);border-radius:10px;padding:18px 12px;display:flex;justify-content:center;align-items:center}
+.sign svg{display:block;height:clamp(150px,44vw,200px);width:auto;max-width:100%}
+.sign.wide svg{height:auto;width:min(100%,340px)}
+.ssign{background:var(--chart-bg);border:1px solid var(--line);border-radius:8px;padding:6px;display:inline-flex;align-self:flex-start}
+.ssign svg{display:block;height:64px;width:auto}
+.ssign.wide svg{height:auto;width:132px}
+.info{display:flex;flex-direction:column;gap:8px;padding:0 16px 14px}
+.info p{margin:0;font-size:.92rem}
+.info b{font-weight:600}
 .letgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:2px 16px 16px}
 .letbtn{appearance:none;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:10px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;min-height:58px}
 .letbtn b{font:800 1.45rem var(--f-sign);line-height:1}
@@ -181,6 +190,7 @@ textarea::placeholder{color:var(--muted);font-weight:500}
 .check input{width:22px;height:22px;accent-color:var(--teal);flex:none}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media (max-width:520px){.two{grid-template-columns:1fr}.where{text-align:left}}
+@media (max-width:340px){.tab{font-size:.76rem}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -261,7 +271,9 @@ var SCENES=[
   {id:4,name:"Анкета CDL"},
   {id:5,name:"Зрение, фото, оплата"},
   {id:6,name:"Если нужны тесты"},
-  {id:7,name:"Если не понял"}
+  {id:7,name:"Если не понял"},
+  {id:8,name:"Дорога: вопросы инспектора"},
+  {id:9,name:"Дорога: знаки"}
 ];
 var CDL="cdl|c d l|cdls";
 var CLE="class e|class ee";
@@ -408,8 +420,174 @@ var CARDS=[
   {en:"Is there anything else I need?",ru:"Мне нужно что-то ещё?",k:["anything else"]}]},
 {id:"c49",s:7,p:"We can't help you with that at this window.",r:"С этим мы не поможем в этом окне.",a:[
   {en:"Where should I go, then?",ru:"Куда мне тогда обратиться?",k:["where"]},
-  {en:"Can I speak with a supervisor, please?",ru:"Можно поговорить со старшим сотрудником?",k:["supervisor"]}]}
+  {en:"Can I speak with a supervisor, please?",ru:"Можно поговорить со старшим сотрудником?",k:["supervisor"]}]},
+/* Scene 8: roadside English check, step 1 (interview) */
+{id:"d1",s:8,p:"Good afternoon. Do you know why I stopped you?",r:"Добрый день. Знаете, почему я вас остановил?",a:[
+  {en:"No, officer. Can you tell me why, please?",ru:"Нет, офицер. Скажете, пожалуйста, почему?",k:["no","why|tell"]}],
+  n:"Шаг 1 проверки английского — разговор с инспектором. Переводчик в телефоне и чужая помощь запрещены. Если не понял, переспроси по-английски."},
+{id:"d2",s:8,p:"This is a roadside inspection. Can I see your driver's license, please?",r:"Это проверка на дороге. Покажите, пожалуйста, ваши права.",a:[
+  {en:"Sure. Here is my CDL.",ru:"Конечно. Вот мой CDL.",k:["here|sure|yes",CDL]},
+  {en:"Here is my learner's permit. My trainer is next to me, and he has a CDL.",ru:"Вот моё ученическое разрешение. Рядом со мной инструктор, у него есть CDL.",k:["permit|learner","trainer"]}],
+  n:"С ученическим разрешением (CLP) рядом на пассажирском сиденье должен сидеть водитель с CDL нужного класса."},
+{id:"d3",s:8,p:"May I see your medical card?",r:"Покажите вашу медкарту.",a:[
+  {en:"Yes, here is my medical card.",ru:"Да, вот моя медкарта.",k:["here|yes","medical"]}]},
+{id:"d4",s:8,p:"Can I see the registration and proof of insurance for this truck?",r:"Покажите регистрацию и страховку на эту машину.",a:[
+  {en:"Yes. Here are the registration and the insurance card.",ru:"Да. Вот регистрация и страховая карточка.",k:["here|yes","registration|insurance"]}]},
+{id:"d5",s:8,p:"Who do you drive for?",r:"На какую компанию вы работаете?",a:[
+  {en:"I drive for Sunshine Freight. Our DOT number is on the door.",ru:"Я работаю водителем в Sunshine Freight. Наш номер DOT на двери.",k:["drive for|work for"]}],
+  n:"Sunshine Freight — пример, назови свою компанию. DOT number — номер перевозчика, он написан на двери кабины."},
+{id:"d6",s:8,p:"Where are you coming from?",r:"Откуда вы едете?",a:[
+  {en:"I'm coming from Miami.",ru:"Я еду из Майами.",k:["from"]},
+  {en:"I picked up this load in Miami.",ru:"Я забрал этот груз в Майами.",k:["picked up|pick up","load"]}],
+  n:"Назови свой город. Короткого ответа достаточно."},
+{id:"d7",s:8,p:"Where are you headed?",r:"Куда вы направляетесь?",a:[
+  {en:"I'm going to Orlando. I'm delivering to a warehouse there.",ru:"Я еду в Орландо. Везу груз на склад.",k:["going|heading|headed|delivering"]}],
+  n:"Headed — то же, что going. Могут спросить и так: Where are you going? What's your destination?"},
+{id:"d8",s:8,p:"What are you hauling today?",r:"Что вы сегодня везёте?",a:[
+  {en:"I'm hauling dry goods. Boxes of food products.",ru:"Везу сухие грузы. Коробки с продуктами.",k:["hauling|carrying|load|have"]},
+  {en:"Nothing. The trailer is empty.",ru:"Ничего. Прицеп пустой.",k:["empty|nothing"]}],
+  n:"Hauling — везти груз. Empty — пустой."},
+{id:"d9",s:8,p:"Do you have any hazardous materials on board?",r:"Везёте опасные грузы?",a:[
+  {en:"No, no hazardous materials.",ru:"Нет, опасных грузов нет.",k:["no"]}],
+  n:"Hazardous materials, коротко hazmat — опасные грузы."},
+{id:"d10",s:8,p:"Can I see your bill of lading?",r:"Покажите накладную на груз.",a:[
+  {en:"Yes, here are my shipping papers.",ru:"Да, вот документы на груз.",k:["here|yes","papers|bill of lading|bill"]}],
+  n:"Bill of lading (BOL) и shipping papers — накладная на груз."},
+{id:"d11",s:8,p:"How long have you been driving today?",r:"Сколько вы сегодня уже за рулём?",a:[
+  {en:"About five hours. I started at six this morning.",ru:"Около пяти часов. Я начал в шесть утра.",k:["hours|hour"]}],
+  n:"Отвечай числом часов. Лимит — 11 часов за рулём после 10 часов отдыха."},
+{id:"d12",s:8,p:"When did you take your last break?",r:"Когда у вас был последний перерыв?",a:[
+  {en:"I took a thirty-minute break two hours ago.",ru:"Два часа назад у меня был перерыв на 30 минут.",k:["break","ago|minutes|minute|hours|hour"]}],
+  n:"После 8 часов за рулём нужен перерыв не меньше 30 минут."},
+{id:"d13",s:8,p:"Can you show me your logs on the ELD?",r:"Покажите ваши записи в ELD.",a:[
+  {en:"Yes. Here is the screen with my logs.",ru:"Да. Вот экран с моими записями.",k:["yes|here","logs|log|screen"]}],
+  n:"ELD — электронный журнал рабочего времени. Logs — записи часов работы и отдыха."},
+{id:"d14",s:8,p:"Did you do a pre-trip inspection this morning?",r:"Вы сегодня утром делали предрейсовый осмотр?",a:[
+  {en:"Yes, I did my pre-trip inspection before I left.",ru:"Да, я сделал предрейсовый осмотр перед выездом.",k:["yes","pre trip|pretrip|inspection|checked"]}]},
+{id:"d15",s:8,p:"How tall is your truck?",r:"Какая высота у вашей машины?",a:[
+  {en:"It's thirteen feet six inches.",ru:"13 футов 6 дюймов.",k:["13|thirteen","6|six"]}],
+  n:"Высоту говорят в футах и дюймах. Знай высоту своей машины: от неё зависит, проедешь ли под мостом."},
+{id:"d16",s:8,p:"Turn on your headlights and your four-way flashers, please.",r:"Включите, пожалуйста, фары и аварийную сигнализацию.",a:[
+  {en:"Okay. The lights and the flashers are on.",ru:"Хорошо. Фары и аварийка включены.",k:["okay|ok|on"]}],
+  n:"Four-way flashers, hazard lights — аварийная сигнализация."},
+{id:"d17",s:8,p:"Now press the brake pedal and hold it.",r:"Теперь нажмите на педаль тормоза и держите.",a:[
+  {en:"Okay, I'm holding the brake.",ru:"Хорошо, держу тормоз.",k:["holding|okay|ok"]}],
+  n:"Так проверяют стоп-сигналы. Ещё могут сказать: left turn signal, right turn signal — левый, правый поворотник."},
+{id:"d18",s:8,p:"Please turn off the engine and step out of the truck.",r:"Заглушите, пожалуйста, двигатель и выйдите из машины.",a:[
+  {en:"Okay. Should I bring my paperwork?",ru:"Хорошо. Взять документы с собой?",k:["okay|ok|sure","paperwork|papers|documents"]}]},
+{id:"d19",s:8,p:"How long have you been a truck driver?",r:"Сколько вы работаете водителем грузовика?",a:[
+  {en:"I got my first CDL in New York in 2024.",ru:"Свой первый CDL я получил в Нью-Йорке в 2024 году.",k:[CDL,"2024|twenty twenty four"]},
+  {en:"About two years.",ru:"Около двух лет.",k:["years|year"]}]},
+{id:"d20",s:8,rate:1.2,p:"Alright, I'm gonna need your annual, your BOL, and your ELD transfer, then we'll take a look at your brakes.",r:"Так, мне нужны документ о ежегодном техосмотре, накладная и передача данных из ELD, потом посмотрим тормоза.",a:[
+  {en:"Sorry, officer, could you say that slower, please?",ru:"Извините, офицер, можно помедленнее?",k:["sorry|slower|repeat|again"]},
+  {en:"Sorry, what is an annual?",ru:"Извините, что такое annual?",k:["what","annual|mean"]}],
+  n:"Annual — документ о ежегодном техосмотре машины. Переспрашивать можно, а доставать переводчик в телефоне нельзя."},
+{id:"d21",s:8,p:"Everything looks good. You're free to go. Drive safe.",r:"Всё в порядке. Можете ехать. Счастливого пути.",a:[
+  {en:"Thank you, officer. Have a good day.",ru:"Спасибо, офицер. Хорошего дня.",k:["thank|thanks"]}]}
 ];
+
+/* ---------- road signs, drawn in MUTCD style ---------- */
+var SY="#f9c80e",SO="#f37021",SR_="#c8102e",SK="#111111",SG="#c5e00d",EDGE='stroke="#8a8a8a" stroke-width="1.2"';
+var SFONT='font-family="Overpass,\'Arial Narrow\',Arial,sans-serif" font-weight="800" text-anchor="middle"';
+function sT(x,y,s,txt,col){return '<text x="'+x+'" y="'+y+'" font-size="'+s+'" fill="'+(col||SK)+'" '+SFONT+'>'+txt+'</text>'}
+function sM(x,y,s,txt){return '<text x="'+x+'" y="'+y+'" font-size="'+s+'" fill="#ffb000" font-family="\'JetBrains Mono\',ui-monospace,Consolas,monospace" font-weight="700" text-anchor="middle" letter-spacing="1">'+txt+'</text>'}
+function sLn(d,w,round){return '<path d="'+d+'" fill="none" stroke="'+SK+'" stroke-width="'+w+'" stroke-linejoin="round" stroke-linecap="'+(round?'round':'butt')+'"/>'}
+function sHead(x,y,dx,dy,L,W){var n=Math.hypot(dx,dy);dx/=n;dy/=n;var bx=x-dx*L,by=y-dy*L,px=-dy*W,py=dx*W;return '<polygon points="'+x+','+y+' '+(bx+px).toFixed(1)+','+(by+py).toFixed(1)+' '+(bx-px).toFixed(1)+','+(by-py).toFixed(1)+'" fill="'+SK+'"/>'}
+function octP(cx,cy,r){var p=[];for(var i=0;i<8;i++){var a=Math.PI/8+i*Math.PI/4;p.push((cx+r*Math.cos(a)).toFixed(1)+","+(cy+r*Math.sin(a)).toFixed(1))}return p.join(" ")}
+function sTruck(x,y,sc,rot){return '<g transform="translate('+x+','+y+') rotate('+(rot||0)+') scale('+sc+')" fill="'+SK+'"><rect x="-30" y="-22" width="40" height="18" rx="1"/><path d="M12 -4 V-18 H22 L29 -10 V-4 Z"/><circle cx="-22" cy="0" r="4.5"/><circle cx="-12" cy="0" r="4.5"/><circle cx="20" cy="0" r="4.5"/></g>'}
+function sSvg(w,h,body){return {w:w,h:h,svg:'<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'+body+'</svg>'}}
+function sDia(col,body){return sSvg(120,120,'<polygon points="60,2 118,60 60,118 2,60" fill="'+col+'" '+EDGE+' stroke-linejoin="round"/><polygon points="60,8 112,60 60,112 8,60" fill="none" stroke="'+SK+'" stroke-width="3" stroke-linejoin="round"/>'+body)}
+function sRect(w,h,col,brd,body){return sSvg(w,h,'<rect x="1" y="1" width="'+(w-2)+'" height="'+(h-2)+'" rx="7" fill="'+col+'" '+EDGE+'/><rect x="5" y="5" width="'+(w-10)+'" height="'+(h-10)+'" rx="5" fill="none" stroke="'+brd+'" stroke-width="3"/>'+body)}
+function sNo(body){return sSvg(120,120,'<rect x="1" y="1" width="118" height="118" rx="8" fill="#fff" '+EDGE+'/><rect x="5" y="5" width="110" height="110" rx="6" fill="none" stroke="'+SK+'" stroke-width="3"/>'+body+'<circle cx="60" cy="60" r="45" fill="none" stroke="'+SR_+'" stroke-width="9"/><line x1="28.2" y1="28.2" x2="91.8" y2="91.8" stroke="'+SR_+'" stroke-width="9"/>')}
+function sEms(a,b){return sSvg(220,96,'<rect x="1.5" y="1.5" width="217" height="93" rx="4" fill="#1b1b1b" stroke="#555" stroke-width="3"/>'+sM(110,41,19,a)+sM(110,75,19,b))}
+var SIGNS={
+  stop:sSvg(120,120,'<polygon points="'+octP(60,60,58)+'" fill="'+SR_+'" '+EDGE+'/><polygon points="'+octP(60,60,52)+'" fill="none" stroke="#fff" stroke-width="3"/>'+sT(60,71,31,"STOP","#fff")),
+  yield:sSvg(120,106,'<polygon points="3,4 117,4 60,103" fill="'+SR_+'" '+EDGE+' stroke-linejoin="round"/><polygon points="24,16 96,16 60,79" fill="#fff"/>'+sT(60,37,13,"YIELD",SR_)),
+  noenter:sSvg(120,120,'<rect x="1" y="1" width="118" height="118" rx="8" fill="#fff" '+EDGE+'/><circle cx="60" cy="60" r="52" fill="'+SR_+'"/><rect x="17" y="52" width="86" height="16" fill="#fff"/>'+sT(60,42,15,"DO NOT","#fff")+sT(60,90,15,"ENTER","#fff")),
+  wrongway:sRect(150,96,SR_,"#fff",sT(75,45,30,"WRONG","#fff")+sT(75,80,30,"WAY","#fff")),
+  oneway:sSvg(170,64,'<rect x="1" y="1" width="168" height="62" rx="6" fill="'+SK+'"/><polygon points="14,20 128,20 128,8 158,32 128,56 128,44 14,44" fill="#fff"/>'+sT(71,38.5,17,"ONE WAY")),
+  speed:sRect(96,124,"#fff",SK,sT(48,32,17,"SPEED")+sT(48,52,17,"LIMIT")+sT(48,104,50,"65")),
+  truckspeed:sRect(96,110,"#fff",SK,sT(48,34,19,"TRUCKS")+sT(48,92,50,"55")),
+  notrucks:sNo(sTruck(62,72,1.05)),
+  donotpass:sRect(100,120,"#fff",SK,sT(50,40,26,"DO")+sT(50,72,26,"NOT")+sT(50,104,26,"PASS")),
+  nopasszone:sSvg(160,100,'<polygon points="2,3 2,97 158,50" fill="'+SY+'" '+EDGE+' stroke-linejoin="round"/><polygon points="9,13 9,87 140,50" fill="none" stroke="'+SK+'" stroke-width="3" stroke-linejoin="round"/>'+sT(44,36,13,"NO")+sT(44,53,13,"PASSING")+sT(44,70,13,"ZONE")),
+  nouturn:sNo(sLn("M46 96 V60 A16 16 0 0 1 78 60 V68",10)+sHead(78,88,0,1,20,13)),
+  noleft:sNo(sLn("M72 98 V58 H50",11)+sHead(28,58,-1,0,22,15)),
+  crossbuck:sSvg(170,120,'<g transform="rotate(-36 85 60)"><rect x="5" y="47" width="160" height="26" rx="3" fill="#fff" stroke="'+SK+'" stroke-width="3"/>'+sT(44,66,16,"CROSS")+sT(124,66,16,"ING")+'</g><g transform="rotate(36 85 60)"><rect x="5" y="47" width="160" height="26" rx="3" fill="#fff" stroke="'+SK+'" stroke-width="3"/>'+sT(46,66,16,"RAIL")+sT(124,66,16,"ROAD")+'</g>'),
+  rrahead:sSvg(120,120,'<circle cx="60" cy="60" r="58" fill="'+SY+'" '+EDGE+'/><circle cx="60" cy="60" r="53" fill="none" stroke="'+SK+'" stroke-width="3"/>'+sLn("M24 24 L96 96 M96 24 L24 96",8)+sT(27,70,26,"R")+sT(93,70,26,"R")),
+  clearance:sDia(SY,sT(60,46,15,"LOW")+sT(60,64,13,"CLEARANCE")+sT(60,81,15,"13&#39;-6&quot;")),
+  weight:sRect(100,120,"#fff",SK,sT(50,30,16,"WEIGHT")+sT(50,50,16,"LIMIT")+sT(50,90,38,"10")+sT(50,108,16,"TONS")),
+  hill:sDia(SY,'<polygon points="34,56 34,82 88,82" fill="'+SK+'"/>'+sTruck(58,66.5,0.7,25.7)),
+  curve:sDia(SY,sLn("M48 96 V72 C48 56 56 46 70 42",10)+sHead(87.3,37.1,14,-4,18,13)),
+  merge:sDia(SY,sLn("M68 100 V40",10)+sHead(68,18,0,-1,22,14)+sLn("M40 90 C40 76 50 66 66 58",8)),
+  laneends:sDia(SY,sT(60,43,13,"LANE")+sT(60,59,13,"ENDS")+sT(60,75,13,"MERGE")+sT(60,91,13,"LEFT")),
+  twoway:sDia(SY,sLn("M48 36 V80",9)+sHead(48,98,0,1,20,12)+sLn("M72 84 V40",9)+sHead(72,22,0,-1,20,12)),
+  signal:sDia(SY,'<rect x="45" y="26" width="30" height="68" rx="7" fill="'+SK+'"/><circle cx="60" cy="42" r="8" fill="#e0242a"/><circle cx="60" cy="60" r="8" fill="'+SY+'"/><circle cx="60" cy="78" r="8" fill="#2aa84a"/>'),
+  stopahead:sDia(SY,'<polygon points="'+octP(60,36,17)+'" fill="'+SR_+'"/>'+sLn("M60 98 V70",9)+sHead(60,56,0,-1,16,12)),
+  ped:sDia(SG,'<circle cx="62" cy="29" r="7" fill="'+SK+'"/>'+sLn("M60 40 L55 66",8,1)+sLn("M58 46 L46 58",6,1)+sLn("M58 46 L71 57",6,1)+sLn("M55 66 L45 89",7,1)+sLn("M55 66 L69 87",7,1)),
+  roadwork:sDia(SO,sT(60,45,15,"ROAD")+sT(60,63,15,"WORK")+sT(60,81,15,"AHEAD")),
+  onelane:sDia(SO,sT(60,38,12,"ONE")+sT(60,53,12,"LANE")+sT(60,68,12,"ROAD")+sT(60,83,12,"AHEAD")),
+  detour:sRect(150,90,SO,SK,sT(75,42,26,"DETOUR")+sLn("M38 64 H100",8)+sHead(122,64,1,0,22,13)),
+  bridge:sDia(SY,sT(60,45,12,"BRIDGE")+sT(60,60,12,"ICES")+sT(60,75,12,"BEFORE")+sT(60,90,12,"ROAD")),
+  school:sRect(100,140,"#fff",SK,'<rect x="8" y="8" width="84" height="26" rx="3" fill="'+SG+'"/>'+sT(50,28,17,"SCHOOL")+sT(50,52,14,"SPEED")+sT(50,68,14,"LIMIT")+sT(50,104,38,"20")+sT(50,119,11,"WHEN")+sT(50,131,11,"FLASHING")),
+  emslane:sEms("RIGHT LANE","CLOSED AHEAD"),
+  emscrash:sEms("ACCIDENT AHEAD","EXPECT DELAYS"),
+  emsweigh:sEms("WEIGH STATION","ALL TRUCKS EXIT")
+};
+function signHtml(id,small){var s=SIGNS[id];if(!s)return "";return '<div class="'+(small?'ssign':'sign')+(s.w/s.h>1.3?' wide':'')+'" role="img" aria-label="Дорожный знак">'+s.svg+'</div>'}
+
+/* Scene 9: roadside English check, step 2 (signs). The officer shows a sign; naming it is not enough, explain what you do. */
+var SQ=[
+  ["What does this sign mean?","Что означает этот знак?"],
+  ["Tell me what this sign means.","Скажите, что означает этот знак."],
+  ["What do you do when you see this sign?","Что вы делаете, когда видите этот знак?"],
+  ["Okay. And this one?","Хорошо. А этот?"],
+  ["Explain this sign to me, please.","Объясните мне, пожалуйста, этот знак."]
+];
+var SQ_EMS=["Read this message board and tell me what it means.","Прочитайте табло и скажите, что оно значит."];
+var SIGN_CARDS=[
+  {sg:"stop",en:"It's a stop sign. I must stop completely, look both ways, and go when it's safe.",ru:"Это знак «Стоп». Нужно полностью остановиться, посмотреть по сторонам и ехать, когда безопасно.",k:["stop","completely|complete|full"],
+    n:"Шаг 2 проверки: инспектор показывает знаки. Мало назвать знак, объясни, что ты будешь делать. Если на шаге 1 не справился, шаг 2 не проводят."},
+  {sg:"yield",en:"Yield. I slow down and let other traffic go first. I stop if I need to.",ru:"Уступи дорогу. Сбавляю скорость и пропускаю других. Если нужно, останавливаюсь.",k:["yield|slow","let|give|go first|right of way"]},
+  {sg:"noenter",en:"Do not enter. I can't drive onto this road. Traffic comes the other way.",ru:"Въезд запрещён. Сюда заезжать нельзя: здесь встречное движение.",k:["do not|don't|can't|cannot|not","enter|drive|go"]},
+  {sg:"wrongway",en:"Wrong way. I'm driving against traffic. I must stop and turn around safely.",ru:"Еду против движения. Нужно остановиться и безопасно развернуться.",k:["wrong","turn around|go back|against"]},
+  {sg:"oneway",en:"One way. Traffic goes only in the direction of the arrow.",ru:"Одностороннее движение. Машины едут только в сторону стрелки.",k:["one way","arrow|direction|only"]},
+  {sg:"speed",en:"The speed limit is sixty-five. I can't drive faster than 65 miles per hour.",ru:"Ограничение скорости 65. Нельзя ехать быстрее 65 миль в час.",k:["speed|limit","65|sixty five"]},
+  {sg:"truckspeed",en:"The speed limit for trucks is fifty-five miles per hour.",ru:"Для грузовиков ограничение 55 миль в час.",k:["truck|trucks","55|fifty five"]},
+  {sg:"notrucks",en:"No trucks. Trucks are not allowed on this road.",ru:"Грузовикам въезд запрещён.",k:["truck|trucks","not allowed|no|can't|cannot|not"]},
+  {sg:"donotpass",en:"Do not pass. I can't pass other vehicles here.",ru:"Обгон запрещён. Здесь нельзя обгонять.",k:["pass|passing","do not|don't|can't|cannot|not|no"]},
+  {sg:"nopasszone",en:"No passing zone. From here I can't pass other vehicles.",ru:"Зона запрета обгона. Отсюда обгонять нельзя.",k:["passing|pass","no|not|can't|cannot"],
+    n:"Этот знак-вымпел стоит слева от дороги."},
+  {sg:"nouturn",en:"No U-turn. I can't turn around here.",ru:"Разворот запрещён.",k:["u turn|uturn|you turn|turn around","no|not|can't|cannot"]},
+  {sg:"noleft",en:"No left turn. I can't turn left here.",ru:"Поворот налево запрещён.",k:["left","no|not|can't|cannot"]},
+  {sg:"crossbuck",en:"Railroad crossing. I slow down, look and listen for a train, and I never stop on the tracks.",ru:"Железнодорожный переезд. Сбавляю скорость, смотрю и слушаю, нет ли поезда, и никогда не останавливаюсь на путях.",k:["railroad|train","look|listen|slow|stop"]},
+  {sg:"rrahead",en:"Railroad crossing ahead. I slow down and get ready to stop.",ru:"Впереди железнодорожный переезд. Сбавляю скорость и готовлюсь остановиться.",k:["railroad|train","ahead|slow|ready"]},
+  {sg:"clearance",en:"Low clearance. The bridge is thirteen feet six inches high. If my truck is taller, I can't go under it.",ru:"Низкий габарит: высота проезда 13 футов 6 дюймов. Если машина выше, проезжать нельзя.",k:["clearance|low","13|thirteen","taller|higher|height|high"],
+    n:"Clearance — высота проезда. 13′6″ читают так: thirteen feet six inches."},
+  {sg:"weight",en:"Weight limit ten tons. Vehicles heavier than ten tons can't use this road.",ru:"Ограничение массы 10 тонн. Машинам тяжелее 10 тонн сюда нельзя.",k:["weight|heavy|heavier","10|ten","tons|ton"]},
+  {sg:"hill",en:"Steep downgrade ahead. I slow down and use a lower gear before the hill.",ru:"Впереди крутой спуск. Сбавляю скорость и включаю пониженную передачу до спуска.",k:["hill|downgrade|grade|steep","gear|slow"],
+    n:"Downgrade — спуск. Lower gear — пониженная передача."},
+  {sg:"curve",en:"Curve to the right ahead. I slow down before the curve.",ru:"Впереди поворот направо. Сбавляю скорость до поворота.",k:["curve|turn","right","slow"]},
+  {sg:"merge",en:"Merging traffic ahead. Cars will join my road from the side, so I watch and make room.",ru:"Впереди примыкание: сбоку вливаются машины. Слежу за ними и оставляю место.",k:["merge|merging|join","watch|room|space|careful|side"]},
+  {sg:"laneends",en:"The lane ends. I need to merge left.",ru:"Полоса заканчивается. Нужно перестроиться влево.",k:["lane","ends|end","merge|left"]},
+  {sg:"twoway",en:"Two-way traffic. Cars come from the other direction on this road.",ru:"Двустороннее движение: навстречу едут машины.",k:["two way|both|two","traffic|direction|cars|oncoming"]},
+  {sg:"signal",en:"Traffic light ahead. I slow down and get ready to stop.",ru:"Впереди светофор. Сбавляю скорость и готовлюсь остановиться.",k:["light|signal","ahead|slow|ready|stop"]},
+  {sg:"stopahead",en:"Stop sign ahead. I slow down and get ready to stop.",ru:"Впереди знак «Стоп». Сбавляю скорость и готовлюсь остановиться.",k:["stop","ahead","slow|ready"]},
+  {sg:"ped",en:"Pedestrian crossing. People may cross the road here, and I must yield to them.",ru:"Пешеходный переход. Здесь переходят люди, их нужно пропустить.",k:["pedestrian|pedestrians|people|crosswalk|walk","cross|crossing|yield|stop"]},
+  {sg:"roadwork",en:"Road work ahead. I slow down and watch for workers and equipment.",ru:"Впереди дорожные работы. Сбавляю скорость и слежу за рабочими и техникой.",k:["work|construction","slow|careful|watch"]},
+  {sg:"onelane",en:"One lane road ahead. Only one lane is open, so I may need to stop and wait.",ru:"Впереди сужение до одной полосы. Может понадобиться остановиться и подождать.",k:["one lane|lane","stop|wait|slow|careful"]},
+  {sg:"detour",en:"Detour. The road is closed, so I follow the detour signs.",ru:"Объезд. Дорога закрыта, еду по знакам объезда.",k:["detour|closed","follow|signs|arrow|go"]},
+  {sg:"bridge",en:"The bridge freezes before the road. In cold weather I slow down on the bridge.",ru:"Мост обледеневает раньше дороги. В холод сбавляю скорость на мосту.",k:["bridge","ice|ices|icy|freeze|freezes|slippery","slow|careful"]},
+  {sg:"school",en:"School zone. When the lights are flashing, the speed limit is twenty.",ru:"Школьная зона. Когда мигают огни, ограничение 20 миль в час.",k:["school","20|twenty","flashing|lights|flash"]},
+  {sg:"emslane",en:"The right lane is closed ahead. I move to the left lane early.",ru:"Впереди закрыта правая полоса. Заранее перестраиваюсь влево.",k:["right","closed","left|move|change"]},
+  {sg:"emscrash",en:"There's an accident ahead. I slow down and expect delays.",ru:"Впереди авария. Сбавляю скорость и жду задержек.",k:["accident|crash","slow|delays|delay|careful"]},
+  {sg:"emsweigh",en:"The weigh station is open. All trucks must exit and go to the scale.",ru:"Весовая станция открыта. Все грузовики должны съехать на весы.",k:["weigh|scale|station","trucks|truck|exit|enter"],
+    n:"Weigh station — весовая станция. Если она открыта, грузовики обязаны заехать."}
+];
+SIGN_CARDS.forEach(function(g,i){
+  var q=g.sg.indexOf("ems")===0?SQ_EMS:SQ[i%SQ.length];
+  CARDS.push({id:"g"+(i+1),s:9,type:"sign",sg:g.sg,p:q[0],r:q[1],a:[{en:g.en,ru:g.ru,k:g.k}],n:g.n});
+});
 
 var KEY_PHRASES=[
   ["I'd like to upgrade my Class E license to a CDL.","Я хочу повысить права Class E до CDL."],
@@ -463,6 +641,31 @@ var VOCAB=[
   ["interstate, intrastate","между штатами, внутри штата"],
   ["retest, retake","пересдача"],
   ["fee","пошлина, сбор"]
+];
+var ROAD_YOU=[
+  ["Sorry, officer, could you repeat the question?","Извините, офицер, повторите вопрос."],
+  ["Could you speak a little slower, please?","Говорите чуть медленнее, пожалуйста."],
+  ["Sorry, what does that word mean?","Извините, что значит это слово?"],
+  ["Yes, sir. / Yes, ma'am.","Да (вежливо мужчине / женщине)."],
+  ["All my paperwork is in this folder.","Все документы в этой папке."],
+  ["My trainer is with me. He has a CDL.","Со мной инструктор, у него есть CDL."]
+];
+var ROAD_VOCAB=[
+  ["officer, inspector","полицейский, инспектор"],
+  ["roadside inspection","проверка на дороге"],
+  ["out of service","снят с рейса, дальше ехать нельзя"],
+  ["weigh station, scale","весовая станция, весы"],
+  ["bill of lading, shipping papers","накладная на груз"],
+  ["hauling, load","везти груз; груз"],
+  ["hazardous materials, hazmat","опасные грузы"],
+  ["ELD, logs, hours of service","электронный журнал, записи, режим труда и отдыха"],
+  ["registration, proof of insurance","регистрация машины, страховка"],
+  ["annual inspection","ежегодный техосмотр"],
+  ["four-way flashers, hazard lights","аварийная сигнализация"],
+  ["turn signal, brake lights","поворотник, стоп-сигналы"],
+  ["clearance, height","высота проезда, высота машины"],
+  ["downgrade, steep hill","спуск, крутой уклон"],
+  ["detour, lane closed","объезд, полоса закрыта"]
 ];
 
 /* ---------- storage ---------- */
@@ -661,13 +864,15 @@ function renderCard(){
   var c=current();
   var sc=SCENES.find(function(x){return x.id===c.s});
   var hidden=set.listen&&!st.showText&&!st.revealed;
+  var road=c.s>=8;
   var h='';
-  h+='<div class="band"><div class="serving"><small>Now serving</small><span class="ticket">A-'+String(st.pos+1).padStart(2,"0")+'</span></div><div class="where"><b>Сцена '+sc.id+'. '+esc(sc.name)+'</b><span>'+(st.pos+1)+' из '+n+'</span></div></div>';
+  h+='<div class="band"><div class="serving"><small>'+(road?'Roadside':'Now serving')+'</small><span class="ticket">'+(road?'R-':'A-')+String(st.pos+1).padStart(2,"0")+'</span></div><div class="where"><b>Сцена '+sc.id+'. '+esc(sc.name)+'</b><span>'+(st.pos+1)+' из '+n+'</span></div></div>';
   h+='<div class="progress"><i style="width:'+(st.pos/n*100).toFixed(1)+'%"></i></div>';
-  /* clerk */
-  h+='<div class="section"><p class="who">Сотрудник</p>';
+  /* clerk or officer */
+  h+='<div class="section"><p class="who">'+(road?'Инспектор':'Сотрудник')+'</p>';
   h+=hidden?'<p class="masked">Текст скрыт. Послушай вопрос и ответь.</p>':'<p class="say">'+esc(qText(c))+'</p>';
   if(c.type==="vision")h+=chartHtml(vis(c));
+  if(c.type==="sign")h+=signHtml(c.sg);
   h+='<div class="btns"><button class="btn primary" data-act="play-q"'+(hasTTS?'':' disabled')+'>'+SPEAKER+'Слушать</button><button class="btn" data-act="play-slow"'+(hasTTS?'':' disabled')+'>Медленнее</button>';
   if(hidden)h+='<button class="btn" data-act="show-text">Текст</button>';
   h+='<button class="btn" data-act="toggle-ru" aria-pressed="'+st.showRu+'">'+(st.showRu?'Скрыть перевод':'Перевод')+'</button></div>';
@@ -723,7 +928,16 @@ function renderPhrases(){
       VL.split("").map(function(L){return '<button class="letbtn" data-act="plet" data-v="'+L+'" aria-label="Буква '+L+'"'+(hasTTS?'':' disabled')+'><b>'+L+'</b><span>'+LNAME[L]+'</span></button>'}).join("")+'</div></div>'+
     group("Что скажет сотрудник на проверке зрения","",VIS_CLERK,"pvc")+
     group("Что можно спросить на проверке зрения","",VIS_YOU,"pvy")+
-    group("Слова, которые могут прозвучать","",VOCAB,"pv");
+    group("Слова, которые могут прозвучать","",VOCAB,"pv")+
+    '<div class="group"><h2>Проверка английского на дороге</h2><div class="info">'+
+      '<p>Водитель грузовика обязан читать и говорить по-английски. Проверить это может инспектор на дороге или на весовой станции.</p>'+
+      '<p><b>Шаг 1. Разговор.</b> Инспектор спрашивает про документы, груз, маршрут и часы за рулём. Переводчик в телефоне и чужая помощь запрещены.</p>'+
+      '<p><b>Шаг 2. Знаки.</b> Инспектор показывает дорожные знаки. Мало назвать знак: объясни, что он значит и что ты будешь делать. Если шаг 1 не пройден, шаг 2 не проводят.</p>'+
+      '<p><b>Не прошёл</b> — водителя снимают с рейса (out of service), дальше ехать нельзя.</p>'+
+      '<p>Тренировка: сцены 8 и 9 во вкладке «Тренировка».</p>'+
+    '</div></div>'+
+    group("Что можно сказать инспектору","Переспрашивать по-английски можно.",ROAD_YOU,"pry")+
+    group("Слова на дорожной проверке","",ROAD_VOCAB,"prv");
 }
 /* cheat sheet: every clerk line with your answers, grouped by scene */
 var VIS_SAMPLE={en:"K, Z, R, D",ru:"Кей, зи, ар, ди — буквы этой строки слева направо."};
@@ -765,7 +979,7 @@ function renderSheet(){
     g.cs.forEach(function(c){
       var q=sheetQ(c),as=sheetA(c),cardOff=isHid(c.id),vis=visAnswers(c);
       var idx=all?as.map(function(a,i){return i}):vis;
-      h+='<div class="srow'+(cardOff?' off':'')+'"><span class="slbl">Сотрудник</span><div class="stxt"><div><button class="sen" data-act="sq" data-id="'+c.id+'">'+esc(q.en)+spk+'</button><span class="sru">'+esc(q.ru)+'</span></div></div>';
+      h+='<div class="srow'+(cardOff?' off':'')+'"><span class="slbl">'+(c.s>=8?'Инспектор':'Сотрудник')+'</span><div class="stxt">'+(c.type==="sign"?signHtml(c.sg,true):'')+'<div><button class="sen" data-act="sq" data-id="'+c.id+'">'+esc(q.en)+spk+'</button><span class="sru">'+esc(q.ru)+'</span></div></div>';
       h+='<span class="slbl you">Ты</span><div class="stxt">'+idx.map(function(i,n){
         var a=as[i],k=c.id+":"+i,aOff=isHid(k);
         var tool='';
@@ -865,6 +1079,8 @@ document.addEventListener("click",function(e){
     case "pk":speak(fill(KEY_PHRASES[i][0]));break;
     case "pr":speak(RESCUE[i][0]);break;
     case "pv":speak(VOCAB[i][0].replace(/,/g,". "));break;
+    case "pry":speak(ROAD_YOU[i][0].replace(" / ",". "));break;
+    case "prv":speak(ROAD_VOCAB[i][0].replace(/,/g,". "));break;
     case "install":
       if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;$("#install").hidden=true})}
       break;
